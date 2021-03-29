@@ -1,0 +1,9 @@
+Package: FLOPART
+Type: Package
+Title: Functional Labeled Optimal Partitioning
+Version: 2020.02.05
+Author: Toby Hocking, Alyssa Stenberg
+Maintainer: Alyssa Stenberg <ajs937@nau.edu>
+Description: Labeled segmentation
+License: GPL-3
+RoxygenNote: 7.1.1
