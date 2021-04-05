@@ -79,16 +79,16 @@ int PeakSegFPOPLog
         curr_label_type = LABEL_UNLABELED;
       }
       if(curr_label_type==LABEL_PEAKSTART){
-        Rprintf("data point %d is in peak start", data_i);
+        Rprintf("data point %d is in peak start \n", data_i);
         }
       if(curr_label_type==LABEL_PEAKEND){
-        Rprintf("data point %d is in peak end", data_i);
+        Rprintf("data point %d is in peak end \n", data_i);
         }
       if(curr_label_type==LABEL_NOPEAKS){
-        Rprintf("data point %d is in no peaks", data_i);
+        Rprintf("data point %d is in no peaks \n", data_i);
         }
       if(curr_label_type==LABEL_UNLABELED){
-        Rprintf("data point %d is unlabeled", data_i);
+        Rprintf("data point %d is unlabeled \n", data_i);
         }
      
     
@@ -97,6 +97,10 @@ int PeakSegFPOPLog
         down_cost->piece_list.emplace_back
         (1.0, -data_vec[0], 0.0,
          min_log_mean, max_log_mean, -1, false);
+        
+        //initialize down_cost_prev to cost of first data point
+        down_cost_prev = down_cost;
+        up_cost_prev = up_cost;
       }else{
 
 
@@ -123,9 +127,8 @@ int PeakSegFPOPLog
      else if(curr_label_type == LABEL_UNLABELED 
             || (curr_label_type== LABEL_PEAKSTART && !at_beginning) 
             || (curr_label_type == LABEL_PEAKEND && at_beginning)){
-             
-             //up cost is min of prev_up, min_less(prev+down + penalty)
-             cost_of_change_up.set_to_min_less_of(down_cost_prev, verbose);
+       //up cost is min of prev_up, min_less(prev+down + penalty)
+        cost_of_change_up.set_to_min_less_of(down_cost_prev, verbose);
        //seg end  
        cost_of_change_up.set_prev_seg_end(data_i-1);
        cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
@@ -171,7 +174,7 @@ int PeakSegFPOPLog
                              data_i, data_vec);
       cum_weight_prev_i = cum_weight_i;
       up_cost_prev = up_cost;
-        down_cost_prev = down_cost;
+      down_cost_prev = down_cost;
     }
     // Decoding the cost_model_vec, and writing to the output matrices.
     double best_cost, best_log_mean, prev_log_mean;

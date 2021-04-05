@@ -17,3 +17,4 @@ label_count <- 3
    PACKAGE="FLOPART")
 
 costMatrix <- matrix(cost_mat, data_count, 2)
+
