@@ -19,6 +19,7 @@ test_that("all up are costs infinite for no peaks",
                label_types, label_count)
             
             costMatrix <- matrix(cost_mat, data_count, 2)
+
             
           
           })

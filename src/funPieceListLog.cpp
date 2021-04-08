@@ -261,8 +261,11 @@ double PoissonLossPieceLog::getDeriv(double log_mean){
 void PiecewisePoissonLossLog::set_to_min_less_of
   (PiecewisePoissonLossLog *input, int verbose){
   piece_list.clear();
+  
+  //if input is infinite, return infinity
   if(input->is_infinite())
   {
+    Rprintf("infinite input! \n");
      return;
   }
   PoissonLossPieceListLog::iterator it = input->piece_list.begin();

@@ -1,20 +1,28 @@
 library(FLOPART)
-
-data_to_test <- 1:10
-weight_vec <- 1:10
-data_count <- 10
-penalty <- 10
-cost_mat <- 1:10
-end_vec <- 1:10
-mean_vec <- 1:10
-intervals_mat <- 1:10
-label_starts <- as.integer(3)
-label_ends <- as.integer(4)
-label_types <- as.integer(0)
-label_count <- 3
-.C("PeakSegFPOPLog_interface", data_to_test, weight_vec, as.integer(data_count), penalty, cost_mat = cost_mat,
-   end_vec, mean_vec, intervals_mat, label_starts, label_ends, label_types, label_count,
+data_count = 5L
+data_vec <- 1:data_count
+weight_vec <- 1:data_count
+penalty <- 0L
+cost_mat <- numeric(data_count * 2)
+end_vec <- integer(data_count)
+mean_vec <- numeric(data_count)
+intervals_mat <- integer(data_count*2)
+label_starts <- 1L
+label_ends <- 3L
+label_types <- 0L
+label_count <- 1L
+result <- 
+  .C("PeakSegFPOPLog_interface", data_vec = data_vec, weight_vec = weight_vec,
+     data_count = data_count, penalty = penalty, cost_mat = cost_mat,
+   end_vec = end_vec, mean_vec = mean_vec, intervals_mat = intervals_mat,
+   label_starts = label_starts, label_ends = label_ends,
+   label_types = label_types, label_count = label_count,
    PACKAGE="FLOPART")
 
-costMatrix <- matrix(cost_mat, data_count, 2)
+costMatrix <- matrix(result[["cost_mat"]], data_count)
 
+
+#PoissonLoss <- function(int meanVal, int dataVal){
+  #meanVal - dataVal * log(meanVal)
+  
+#}
