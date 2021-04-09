@@ -29,8 +29,6 @@ int PeakSegFPOPLog
   int curr_label_type = label_types[0]; //1 = peakStart, 0 = noPeak, -1 = peakEnd
   int label_to_check; //used to see if current data point is in a label
   bool label_found;
-  
-  
   double min_log_mean=INFINITY, max_log_mean=-INFINITY;
   for(int data_i=0; data_i<data_count; data_i++){
     
@@ -103,8 +101,6 @@ Rprintf("data point %d is at end of label \n", data_i);
       up_cost->piece_list.emplace_back
       (1.0, -data_vec[0], 0.0,
        min_log_mean, max_log_mean, -1, false);
-Rprintf("so after initializing first data point, up cost is: \n");
-up_cost->print();
       }
     
     else if(curr_label_type == LABEL_PEAKEND && !at_beginning && !at_end){
@@ -141,8 +137,6 @@ Rprintf("UP: unlabeled or not beginning of peakStart or beginning of peakEnd \n"
       down_cost->piece_list.emplace_back
       (1.0, -data_vec[0], 0.0,
        min_log_mean, max_log_mean, -1, false);
-Rprintf("so after initializing first data point, down cost is \n");
-down_cost->print();
 
     }
     //if at beginning of peak end or end of peak start, infinite down
@@ -174,12 +168,8 @@ Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not b
 
     } 
 
-Rprintf("before adjusting weight, up cost is: \n");
-up_cost->print();
     up_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
                            data_i, data_vec);
-Rprintf("after adjusting weight, up cost is: \n");
-up_cost->print();
     down_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
                              data_i, data_vec);
     

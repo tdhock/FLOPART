@@ -22,7 +22,7 @@ result <-
    label_types = label_types, label_count = label_count,
    PACKAGE="FLOPART")
 
-costMatrix <- matrix(result[["cost_mat"]], data_count)
+costMatrix <- matrix(result[["cost_mat"]], data_count, ncol=2)
 costMatrix
 
 
