@@ -23,7 +23,6 @@ int PeakSegFPOPLog
    int *label_ends,
    int *label_types,
    int label_count){ //matrix where rows are (start, end, labelType)
-  
   bool at_beginning = false;
   bool at_end = false;  
   int curr_label_index = 0;
@@ -104,8 +103,9 @@ Rprintf("data point %d is at end of label \n", data_i);
       up_cost->piece_list.emplace_back
       (1.0, -data_vec[0], 0.0,
        min_log_mean, max_log_mean, -1, false);
-Rprintf("initializing up cost! \n");      
-    }
+Rprintf("so after initializing first data point, up cost is: \n");
+up_cost->print();
+      }
     
     else if(curr_label_type == LABEL_PEAKEND && !at_beginning && !at_end){
 Rprintf("UP: in middle of peak end \n");
@@ -118,7 +118,6 @@ Rprintf("UP: in middle of peak end \n");
                                                    && !at_beginning)
               || (curr_label_type == LABEL_PEAKEND && at_end)){
 Rprintf("UP: in no peaks or not beginning of peak start or end of peak end \n");   
-Rprintf("SETTING UP INF \n");
               //up cost is infinite
               up_cost->set_infinite();
     }
@@ -130,29 +129,26 @@ Rprintf("SETTING UP INF \n");
 Rprintf("UP: unlabeled or not beginning of peakStart or beginning of peakEnd \n");              
               //up cost is min of prev_up, min_less(prev+down + penalty)
               cost_of_change_up.set_to_min_less_of(down_cost_prev, verbose);
-      //seg end  
-      cost_of_change_up.set_prev_seg_end(data_i-1);
-      cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
-      up_cost->set_to_min_env_of(up_cost_prev, &cost_of_change_up, verbose);
-      
+              //seg end  
+             cost_of_change_up.set_prev_seg_end(data_i-1);
+             cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
+             up_cost->set_to_min_env_of(up_cost_prev, &cost_of_change_up, verbose);
     }
-     
+
     //---DOWN COST CALCULATIONS--- 
     if(data_i==0){
       // initialization Cdown_1(m)=gamma_1(m)/w_1
       down_cost->piece_list.emplace_back
       (1.0, -data_vec[0], 0.0,
        min_log_mean, max_log_mean, -1, false);
-Rprintf("initializing down cost! \n");      
-      
+Rprintf("so after initializing first data point, down cost is \n");
+down_cost->print();
+
     }
-    
-    
     //if at beginning of peak end or end of peak start, infinite down
     else if((curr_label_type == LABEL_PEAKEND && at_beginning) ||
        (curr_label_type == LABEL_PEAKSTART && at_end)){
 Rprintf("DOWN: at beginning of peak end of end of peak start \n");
-Rprintf("SETTING DOWN INF \n");
       down_cost->set_infinite();
     }
     
@@ -163,7 +159,6 @@ Rprintf("DOWN: at not beginning of no peaks or middle of peak start \n");
       down_cost = down_cost_prev;
       
     }
-    
     //if unlabeled or first or no peaks/peakStart or not at beginning of peak end
     else if(curr_label_type == LABEL_UNLABELED 
               || (curr_label_type == LABEL_PEAKSTART && at_beginning)
@@ -171,25 +166,33 @@ Rprintf("DOWN: at not beginning of no peaks or middle of peak start \n");
               || (curr_label_type == LABEL_PEAKEND && !at_beginning)){
 Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not beginning of peak end! doing change down or beginning no peaks \n");              
               //down cost is min(prev_down, min_more(prev_up + penalty))
+
       cost_of_change_down.set_to_min_more_of(up_cost_prev, verbose);
       cost_of_change_down.set_prev_seg_end(data_i-1);
       cost_of_change_down.addPenalty(penalty, cum_weight_prev_i);
       down_cost->set_to_min_env_of(down_cost_prev, &cost_of_change_down, verbose);
+
     } 
-    
-    
+
+Rprintf("before adjusting weight, up cost is: \n");
+up_cost->print();
     up_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
                            data_i, data_vec);
-Rprintf("before adjusting weights, is down cost infinite? %d \n", down_cost->is_infinite());
-    
+Rprintf("after adjusting weight, up cost is: \n");
+up_cost->print();
     down_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
                              data_i, data_vec);
-Rprintf("after adjusting weights, is down cost infinite? %d \n", down_cost->is_infinite());
     
+
     cum_weight_prev_i = cum_weight_i;
     up_cost_prev = up_cost;
     down_cost_prev = down_cost;
-Rprintf("leaving for loop, is down cost infinite? %d \n", down_cost->is_infinite());
+    Rprintf("for data point %d: \n", data_i);
+    Rprintf("up is \n");
+    up_cost->print();
+    Rprintf("down is \n");
+    down_cost->print();
+    Rprintf("\n\n\n");
   }
   // Decoding the cost_model_vec, and writing to the output matrices.
   double best_cost, best_log_mean, prev_log_mean;
@@ -212,14 +215,16 @@ Rprintf("leaving for loop, is down cost infinite? %d \n", down_cost->is_infinite
   down_cost->Minimize
     (&best_cost, &best_log_mean,
      &prev_seg_end, &prev_log_mean);
+Rprintf("down cost:");
+down_cost->print();
   mean_vec[0] = exp(best_log_mean);
   end_vec[0] = prev_seg_end;
   int out_i=1;
   while(0 <= prev_seg_end){
     // up_cost is actually either an up or down cost.
     up_cost = &cost_model_mat[prev_seg_offset + prev_seg_end];
-    Rprintf("decoding out_i=%d prev_seg_end=%d prev_seg_offset=%d\n", out_i, prev_seg_end, prev_seg_offset);
-    up_cost->print();
+Rprintf("decoding out_i=%d prev_seg_end=%d prev_seg_offset=%d\n", out_i, prev_seg_end, prev_seg_offset);
+up_cost->print();
     if(prev_log_mean != INFINITY){
       //equality constraint inactive
       best_log_mean = prev_log_mean;
@@ -238,6 +243,7 @@ Rprintf("setting mean_vec[out_i] to %d \n", mean_vec[out_i]);
       prev_seg_offset = 0;
     }
     out_i++;
+Rprintf("leaving loop with prev_seg_end %d \n", prev_seg_end);
   }
 return 0;
 }

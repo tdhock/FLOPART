@@ -837,6 +837,7 @@ void PiecewisePoissonLossLog::set_to_min_env_of
   else if(fun2->is_infinite())
   {
     //return fun1;
+    piece_list = fun1->piece_list;
   }
   else
   {
@@ -1250,10 +1251,13 @@ void PiecewisePoissonLossLog::adjustWeights(double cum_weight_prev_i,
                    double cum_weight_i, double *weight_vec, int data_i,
                    int *data_vec){
   multiply(cum_weight_prev_i);
+
   add(weight_vec[data_i],
      -data_vec[data_i]*weight_vec[data_i],
                                  0.0);
+
   multiply(1/cum_weight_i);
+
 
 }
 

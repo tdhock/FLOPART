@@ -1,7 +1,7 @@
 library(FLOPART)
 data_count = 5L
-data_vec <- 1:data_count
-weight_vec <- 1:data_count
+data_vec <- as.integer(1:data_count)
+weight_vec <- as.double(1:data_count)
 penalty <- 0L
 cost_mat <- numeric(data_count * 2)
 end_vec <- integer(data_count)
@@ -11,6 +11,9 @@ label_starts <- 1L
 label_ends <- 3L
 label_types <- 0L
 label_count <- 1L
+
+end_vec
+weight_vec
 result <- 
   .C("PeakSegFPOPLog_interface", data_vec = data_vec, weight_vec = weight_vec,
      data_count = data_count, penalty = penalty, cost_mat = cost_mat,
@@ -20,6 +23,7 @@ result <-
    PACKAGE="FLOPART")
 
 costMatrix <- matrix(result[["cost_mat"]], data_count)
+costMatrix
 
 
 #PoissonLoss <- function(int meanVal, int dataVal){
