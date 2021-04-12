@@ -45,13 +45,16 @@ int PeakSegFPOPLog
   }
   std::vector<PiecewisePoissonLossLog> cost_model_mat(data_count * 2);
   PiecewisePoissonLossLog *up_cost, *down_cost, *up_cost_prev, *down_cost_prev;
-  PiecewisePoissonLossLog min_prev_cost, cost_of_change_up, cost_of_change_down;
+  PiecewisePoissonLossLog cost_of_change_up, cost_of_change_down;
   int verbose=0;
   double cum_weight_i = 0.0, cum_weight_prev_i;
   for(int data_i=0; data_i<data_count; data_i++){
+
+    
     cum_weight_i += weight_vec[data_i];
     up_cost = &cost_model_mat[data_i];
     down_cost = &cost_model_mat[data_i + data_count];
+Rprintf("down cost address is %p for data point %d \n", down_cost, data_i);    
     
     label_to_check = curr_label_index;
     label_found = false;
@@ -165,6 +168,7 @@ Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not b
       cost_of_change_down.set_prev_seg_end(data_i-1);
       cost_of_change_down.addPenalty(penalty, cum_weight_prev_i);
       down_cost->set_to_min_env_of(down_cost_prev, &cost_of_change_down, verbose);
+Rprintf("after choosing, the down cost address is %p \n", down_cost);
 
     } 
 
@@ -177,13 +181,13 @@ Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not b
     cum_weight_prev_i = cum_weight_i;
     up_cost_prev = up_cost;
     down_cost_prev = down_cost;
-    Rprintf("for data point %d: \n", data_i);
-    Rprintf("up is \n");
-    up_cost->print();
-    Rprintf("down is \n");
-    down_cost->print();
-    Rprintf("\n\n\n");
+
+    
+Rprintf("leaving loop, down cost address is %p \n\n", down_cost);    
   }
+  
+  
+  
   // Decoding the cost_model_vec, and writing to the output matrices.
   double best_cost, best_log_mean, prev_log_mean;
   int prev_seg_end=data_count;
@@ -193,6 +197,8 @@ Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not b
   }
   for(int i=0; i<2*data_count; i++){
     up_cost = &cost_model_mat[i];
+Rprintf("for i= %d, out here, out cost is \n", i);
+up_cost->print();
     intervals_mat[i] = up_cost->piece_list.size();
     up_cost->Minimize
       (cost_mat+i, &best_log_mean,

@@ -1,7 +1,7 @@
 library(FLOPART)
 data_count = 5L
 data_vec <- as.integer(1:data_count)
-weight_vec <- as.double(1:data_count)
+weight_vec <- as.double(rep(1, data_count))
 penalty <- 0L
 cost_mat <- numeric(data_count * 2)
 end_vec <- integer(data_count)
@@ -22,11 +22,11 @@ result <-
    label_types = label_types, label_count = label_count,
    PACKAGE="FLOPART")
 
-costMatrix <- matrix(result[["cost_mat"]], data_count, ncol=2)
+costMatrix <- matrix(result[["cost_mat"]], nrow=2, ncol=data_count, byrow=TRUE)
 costMatrix
 
 
-#PoissonLoss <- function(int meanVal, int dataVal){
-  #meanVal - dataVal * log(meanVal)
+PoissonLoss <- function(meanVal, dataVal){
+  meanVal - dataVal * log(meanVal)
   
-#}
+}

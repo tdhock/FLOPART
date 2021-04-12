@@ -1252,7 +1252,7 @@ void PiecewisePoissonLossLog::adjustWeights(double cum_weight_prev_i,
                    int *data_vec){
   multiply(cum_weight_prev_i);
 
-  add(weight_vec[data_i],
+    add(weight_vec[data_i],
      -data_vec[data_i]*weight_vec[data_i],
                                  0.0);
 
