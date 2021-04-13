@@ -2,14 +2,14 @@ library(FLOPART)
 data_count = 5L
 data_vec <- as.integer(1:data_count)
 weight_vec <- as.double(rep(1, data_count))
-penalty <- 0L
+penalty <- as.double(0)
 cost_mat <- numeric(data_count * 2)
 end_vec <- integer(data_count)
 mean_vec <- numeric(data_count)
 intervals_mat <- integer(data_count*2)
 label_starts <- 1L
 label_ends <- 3L
-label_types <- 1L
+label_types <- 0L
 label_count <- 1L
 
 end_vec

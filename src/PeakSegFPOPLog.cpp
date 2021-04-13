@@ -43,73 +43,42 @@ int PeakSegFPOPLog
   }
   std::vector<PiecewisePoissonLossLog> cost_model_mat(data_count * 2);
   PiecewisePoissonLossLog *up_cost, *down_cost;
-  //, *up_cost_prev, *down_cost_prev;
   PiecewisePoissonLossLog up_cost_prev, down_cost_prev,
     cost_of_change_up, cost_of_change_down;
   int verbose=0;
   double cum_weight_i = 0.0, cum_weight_prev_i;
+
+  
   for(int data_i=0; data_i<data_count; data_i++){
 
-    
     cum_weight_i += weight_vec[data_i];
     up_cost = &cost_model_mat[data_i];
     down_cost = &cost_model_mat[data_i + data_count];
-
     at_beginning = false;
     at_end = false;
-//DELETE THIS    
-Rprintf("checking with label index %d \n", curr_label_index);
-if(curr_label_index < label_count){
-     Rprintf("start: %d, end %d \n", label_starts[curr_label_index], label_ends[curr_label_index]);
-  }
-//^^^^^^^^^^^^^^^^^
     //if we haven't checked all the labels 
     if(curr_label_index < label_count){
        if(data_i >= label_starts[curr_label_index] && data_i <= label_ends[curr_label_index]){
             //if >= current start and <= current end
                  
             curr_label_type = label_types[curr_label_index];
-           Rprintf("set label type to %d \n", curr_label_type);
-        
+
            if(data_i == label_starts[curr_label_index]){
-                Rprintf("at beginning! \n");
                 at_beginning = true;
               }
            if(data_i == label_ends[curr_label_index]){
-                 Rprintf("at end! \n");
                  at_end = true;
                  curr_label_index++;
               }
            
          }
          else{
-              Rprintf("in inner else! \n");
               curr_label_type = LABEL_UNLABELED;
            }
       }
     else{
-         Rprintf("in outer else \n");
          curr_label_type = LABEL_UNLABELED;
       }
-
-
-
-  
-    if(curr_label_type==LABEL_PEAKSTART){
-      Rprintf("data point %d is in peak start \n", data_i);
-    }
-    if(curr_label_type==LABEL_PEAKEND){
-      Rprintf("data point %d is in peak end \n", data_i);
-    }
-    if(curr_label_type==LABEL_NOPEAKS){
-      Rprintf("data point %d is in no peaks \n", data_i);
-    }
-    if(curr_label_type==LABEL_UNLABELED){
-      Rprintf("data point %d is unlabeled \n", data_i);
-    }
-    
-    
-    
     
     //---UP COST CALCULATIONS---
     
@@ -146,6 +115,7 @@ Rprintf("UP: unlabeled or not beginning of peakStart or beginning of peakEnd \n"
              cost_of_change_up.set_prev_seg_end(data_i-1);
              cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
              up_cost->set_to_min_env_of(&up_cost_prev, &cost_of_change_up, verbose);
+             
     }
 
     //---DOWN COST CALCULATIONS--- 
@@ -194,11 +164,6 @@ Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not b
     cum_weight_prev_i = cum_weight_i;
     up_cost_prev = *up_cost;
     down_cost_prev = *down_cost;
-Rprintf("for data point %d \n", data_i);
-Rprintf("up cost: \n");
-up_cost->print();
-Rprintf("down cost: \n");
-down_cost->print();
 Rprintf("\n\n");
     
   }
@@ -219,6 +184,7 @@ Rprintf("\n\n");
       (cost_mat+i, &best_log_mean,
        &prev_seg_end, &prev_log_mean);
   }
+Rprintf("came out with prev seg end being: %d \n", prev_seg_end);  
   // last segment is down (offset N) so the second to last segment is
   // up (offset 0).
   int prev_seg_offset = 0;
@@ -230,6 +196,7 @@ Rprintf("\n\n");
   end_vec[0] = prev_seg_end;
   int out_i=1;
   while(0 <= prev_seg_end){
+Rprintf("\n\n IN WHILE \n\n");    
     // up_cost is actually either an up or down cost.
     up_cost = &cost_model_mat[prev_seg_offset + prev_seg_end];
 //Rprintf("decoding out_i=%d prev_seg_end=%d prev_seg_offset=%d\n", out_i, prev_seg_end, prev_seg_offset);
@@ -239,6 +206,8 @@ Rprintf("\n\n");
     }
     up_cost->findMean
       (best_log_mean, &prev_seg_end, &prev_log_mean);
+Rprintf("up cost here is \n");
+up_cost->print();
     mean_vec[out_i] = exp(best_log_mean);
 Rprintf("setting mean_vec[out_i] to %d \n", mean_vec[out_i]);
     end_vec[out_i] = prev_seg_end;
