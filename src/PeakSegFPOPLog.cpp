@@ -192,6 +192,7 @@ Rprintf("came out with prev seg end being: %d \n", prev_seg_end);
   down_cost->Minimize
     (&best_cost, &best_log_mean,
      &prev_seg_end, &prev_log_mean);
+Rprintf("after down cost minimize call, seg end is %d \n", prev_seg_end);  
   mean_vec[0] = exp(best_log_mean);
   end_vec[0] = prev_seg_end;
   int out_i=1;
