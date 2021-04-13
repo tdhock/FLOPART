@@ -26,9 +26,7 @@ int PeakSegFPOPLog
   bool at_beginning = false;
   bool at_end = false;  
   int curr_label_index = 0;
-  int curr_label_type = label_types[0]; //1 = peakStart, 0 = noPeak, -1 = peakEnd
-  int label_to_check; //used to see if current data point is in a label
-  bool label_found;
+  int curr_label_type = LABEL_UNLABELED; //1 = peakStart, 0 = noPeak, -1 = peakEnd
   double min_log_mean=INFINITY, max_log_mean=-INFINITY;
   for(int data_i=0; data_i<data_count; data_i++){
     
@@ -57,31 +55,46 @@ int PeakSegFPOPLog
     up_cost = &cost_model_mat[data_i];
     down_cost = &cost_model_mat[data_i + data_count];
 
-    label_to_check = curr_label_index;
-    label_found = false;
     at_beginning = false;
     at_end = false;
-    while(data_i >= label_starts[label_to_check] && !label_found){
-      if(data_i <= label_ends[label_to_check]){
-        if(data_i==label_starts[label_to_check]){
-          at_beginning = true;
-Rprintf("data point %d is at beginning of label \n", data_i);
-        } 
-        if(data_i==label_ends[label_to_check]){
-          at_end = true;
-Rprintf("data point %d is at end of label \n", data_i);
-        }
+//DELETE THIS    
+Rprintf("checking with label index %d \n", curr_label_index);
+if(curr_label_index < label_count){
+     Rprintf("start: %d, end %d \n", label_starts[curr_label_index], label_ends[curr_label_index]);
+  }
+//^^^^^^^^^^^^^^^^^
+    //if we haven't checked all the labels 
+    if(curr_label_index < label_count){
+       if(data_i >= label_starts[curr_label_index] && data_i <= label_ends[curr_label_index]){
+            //if >= current start and <= current end
+                 
+            curr_label_type = label_types[curr_label_index];
+           Rprintf("set label type to %d \n", curr_label_type);
         
-        label_found = true; 
-        curr_label_type = label_types[label_to_check];
-        curr_label_index = label_to_check;
-        
+           if(data_i == label_starts[curr_label_index]){
+                Rprintf("at beginning! \n");
+                at_beginning = true;
+              }
+           if(data_i == label_ends[curr_label_index]){
+                 Rprintf("at end! \n");
+                 at_end = true;
+                 curr_label_index++;
+              }
+           
+         }
+         else{
+              Rprintf("in inner else! \n");
+              curr_label_type = LABEL_UNLABELED;
+           }
       }
-      label_to_check++;
-    }
-    if(!label_found){
-      curr_label_type = LABEL_UNLABELED;
-    }
+    else{
+         Rprintf("in outer else \n");
+         curr_label_type = LABEL_UNLABELED;
+      }
+
+
+
+  
     if(curr_label_type==LABEL_PEAKSTART){
       Rprintf("data point %d is in peak start \n", data_i);
     }
@@ -117,7 +130,7 @@ Rprintf("UP: in middle of peak end \n");
     else if(curr_label_type == LABEL_NOPEAKS || (curr_label_type == LABEL_PEAKSTART 
                                                    && at_beginning)
               || (curr_label_type == LABEL_PEAKEND && at_end)){
-Rprintf("UP: in no peaks or not beginning of peak start or end of peak end \n");   
+Rprintf("UP: in no peaks or beginning of peak start or end of peak end \n");   
               //up cost is infinite
               up_cost->set_infinite();
     }

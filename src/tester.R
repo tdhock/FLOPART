@@ -9,7 +9,7 @@ mean_vec <- numeric(data_count)
 intervals_mat <- integer(data_count*2)
 label_starts <- 1L
 label_ends <- 3L
-label_types <- -1L
+label_types <- 1L
 label_count <- 1L
 
 end_vec
@@ -24,6 +24,8 @@ result <-
 
 costMatrix <- matrix(result[["cost_mat"]], nrow=2, ncol=data_count, byrow=TRUE)
 costMatrix
+result[["mean_vec"]]
+result[["end_vec"]]
 
 
 PoissonLoss <- function(meanVal, dataVal){
