@@ -9,7 +9,7 @@ mean_vec <- numeric(data_count)
 intervals_mat <- integer(data_count*2)
 label_starts <- 1L
 label_ends <- 3L
-label_types <- 0L
+label_types <- -1L
 label_count <- 1L
 
 end_vec

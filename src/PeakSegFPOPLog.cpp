@@ -115,7 +115,7 @@ Rprintf("UP: in middle of peak end \n");
     
     //if in no peaks or beginning of peak start or end of peak end
     else if(curr_label_type == LABEL_NOPEAKS || (curr_label_type == LABEL_PEAKSTART 
-                                                   && !at_beginning)
+                                                   && at_beginning)
               || (curr_label_type == LABEL_PEAKEND && at_end)){
 Rprintf("UP: in no peaks or not beginning of peak start or end of peak end \n");   
               //up cost is infinite
@@ -181,7 +181,12 @@ Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not b
     cum_weight_prev_i = cum_weight_i;
     up_cost_prev = *up_cost;
     down_cost_prev = *down_cost;
-
+Rprintf("for data point %d \n", data_i);
+Rprintf("up cost: \n");
+up_cost->print();
+Rprintf("down cost: \n");
+down_cost->print();
+Rprintf("\n\n");
     
   }
   
@@ -196,8 +201,6 @@ Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not b
   }
   for(int i=0; i<2*data_count; i++){
     up_cost = &cost_model_mat[i];
-Rprintf("for i= %d, out here, out cost is \n", i);
-up_cost->print();
     intervals_mat[i] = up_cost->piece_list.size();
     up_cost->Minimize
       (cost_mat+i, &best_log_mean,
