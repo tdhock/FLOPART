@@ -169,43 +169,62 @@ Rprintf("\n\n");
   }
   
   
-  
+
   // Decoding the cost_model_vec, and writing to the output matrices.
   double best_cost, best_log_mean, prev_log_mean;
   int prev_seg_end=data_count;
+  PiecewisePoissonLossLog *up_or_down_cost;
+  best_cost = INFINITY;
+  double best_prev_seg_end, best_prev_log_mean,
+  up_or_down_cost_value, up_or_down_log_mean,  up_or_down_prev_log_mean;
+  int up_or_down_prev_seg_end;
+  
+  
   for(int i=0; i<data_count; i++){
     mean_vec[i] = INFINITY;
     end_vec[i] = -2;
   }
   for(int i=0; i<2*data_count; i++){
-    up_cost = &cost_model_mat[i];
-    intervals_mat[i] = up_cost->piece_list.size();
-    up_cost->Minimize
+    up_or_down_cost = &cost_model_mat[i];
+    intervals_mat[i] = (up_or_down_cost->piece_list).size();
+    up_or_down_cost->Minimize
       (cost_mat+i, &best_log_mean,
        &prev_seg_end, &prev_log_mean);
   }
-Rprintf("came out with prev seg end being: %d \n", prev_seg_end);  
   // last segment is down (offset N) so the second to last segment is
   // up (offset 0).
   int prev_seg_offset = 0;
-  down_cost = &cost_model_mat[data_count*2-1];
-  down_cost->Minimize
-    (&best_cost, &best_log_mean,
-     &prev_seg_end, &prev_log_mean);
-Rprintf("after down cost minimize call, seg end is %d \n", prev_seg_end);  
+
+  for(int up_or_down = 1; up_or_down <= 2; up_or_down++){
+       up_or_down_cost = &cost_model_mat[data_count*up_or_down - 1];
+       up_or_down_cost->Minimize(&up_or_down_cost_value, &up_or_down_log_mean,
+                                  &up_or_down_prev_seg_end, &up_or_down_prev_log_mean);
+       if(up_or_down_cost_value < best_cost){
+            best_cost = up_or_down_cost_value;
+            best_log_mean = up_or_down_log_mean;
+            best_prev_seg_end = up_or_down_prev_seg_end;
+            best_prev_log_mean = up_or_down_prev_log_mean;
+         }
+    }
+  
   mean_vec[0] = exp(best_log_mean);
-  end_vec[0] = prev_seg_end;
+  end_vec[0] = best_prev_seg_end;
+  prev_seg_end = best_prev_seg_end;
   int out_i=1;
   while(0 <= prev_seg_end){
 Rprintf("\n\n IN WHILE \n\n");    
     // up_cost is actually either an up or down cost.
-    up_cost = &cost_model_mat[prev_seg_offset + prev_seg_end];
+    up_or_down_cost = &cost_model_mat[prev_seg_offset + prev_seg_end];
 //Rprintf("decoding out_i=%d prev_seg_end=%d prev_seg_offset=%d\n", out_i, prev_seg_end, prev_seg_offset);
     if(prev_log_mean != INFINITY){
       //equality constraint inactive
       best_log_mean = prev_log_mean;
     }
-    up_cost->findMean
+    
+    
+    
+    
+    up_or_down_cost->findMean
       (best_log_mean, &prev_seg_end, &prev_log_mean);
 Rprintf("up cost here is \n");
 up_cost->print();
@@ -222,7 +241,9 @@ Rprintf("setting mean_vec[out_i] to %d \n", mean_vec[out_i]);
     }
     out_i++;
 Rprintf("leaving loop with prev_seg_end %d \n", prev_seg_end);
+     
   }
+     
 return 0;
 }
 
