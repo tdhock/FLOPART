@@ -44,13 +44,13 @@ int PeakSegFPOPLog
   std::vector<PiecewisePoissonLossLog> cost_model_mat(data_count * 2);
   PiecewisePoissonLossLog *up_cost, *down_cost;
   PiecewisePoissonLossLog up_cost_prev, down_cost_prev,
-    cost_of_change_up, cost_of_change_down;
+  cost_of_change_up, cost_of_change_down;
   int verbose=0;
   double cum_weight_i = 0.0, cum_weight_prev_i;
-
+  
   
   for(int data_i=0; data_i<data_count; data_i++){
-
+    
     cum_weight_i += weight_vec[data_i];
     up_cost = &cost_model_mat[data_i];
     down_cost = &cost_model_mat[data_i + data_count];
@@ -58,27 +58,27 @@ int PeakSegFPOPLog
     at_end = false;
     //if we haven't checked all the labels 
     if(curr_label_index < label_count){
-       if(data_i >= label_starts[curr_label_index] && data_i <= label_ends[curr_label_index]){
-            //if >= current start and <= current end
-                 
-            curr_label_type = label_types[curr_label_index];
-
-           if(data_i == label_starts[curr_label_index]){
-                at_beginning = true;
-              }
-           if(data_i == label_ends[curr_label_index]){
-                 at_end = true;
-                 curr_label_index++;
-              }
-           
-         }
-         else{
-              curr_label_type = LABEL_UNLABELED;
-           }
+      if(data_i >= label_starts[curr_label_index] && data_i <= label_ends[curr_label_index]){
+        //if >= current start and <= current end
+        
+        curr_label_type = label_types[curr_label_index];
+        
+        if(data_i == label_starts[curr_label_index]){
+          at_beginning = true;
+        }
+        if(data_i == label_ends[curr_label_index]){
+          at_end = true;
+          curr_label_index++;
+        }
+        
       }
+      else{
+        curr_label_type = LABEL_UNLABELED;
+      }
+    }
     else{
-         curr_label_type = LABEL_UNLABELED;
-      }
+      curr_label_type = LABEL_UNLABELED;
+    }
     
     //---UP COST CALCULATIONS---
     
@@ -87,10 +87,10 @@ int PeakSegFPOPLog
       up_cost->piece_list.emplace_back
       (1.0, -data_vec[0], 0.0,
        min_log_mean, max_log_mean, -1, false);
-      }
+    }
     
     else if(curr_label_type == LABEL_PEAKEND && !at_beginning && !at_end){
-Rprintf("UP: in middle of peak end \n");
+      //Rprintf("UP: in middle of peak end \n");
       //up cost is just previous up cost
       *up_cost = up_cost_prev;
     }
@@ -99,44 +99,44 @@ Rprintf("UP: in middle of peak end \n");
     else if(curr_label_type == LABEL_NOPEAKS || (curr_label_type == LABEL_PEAKSTART 
                                                    && at_beginning)
               || (curr_label_type == LABEL_PEAKEND && at_end)){
-Rprintf("UP: in no peaks or beginning of peak start or end of peak end \n");   
-              //up cost is infinite
-              up_cost->set_infinite();
+             // Rprintf("UP: in no peaks or beginning of peak start or end of peak end \n");   
+      //up cost is infinite
+      up_cost->set_infinite();
     }
     
     //if unlabeled or not beginning of peak start or beginning of peak end  
     else if(curr_label_type == LABEL_UNLABELED 
               || (curr_label_type== LABEL_PEAKSTART && !at_beginning) 
               || (curr_label_type == LABEL_PEAKEND && at_beginning)){
-Rprintf("UP: unlabeled or not beginning of peakStart or beginning of peakEnd \n");              
-              //up cost is min of prev_up, min_less(prev+down + penalty)
-              cost_of_change_up.set_to_min_less_of(&down_cost_prev, verbose);
-              //seg end  
-             cost_of_change_up.set_prev_seg_end(data_i-1);
-             cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
-             up_cost->set_to_min_env_of(&up_cost_prev, &cost_of_change_up, verbose);
-             
+              //Rprintf("UP: unlabeled or not beginning of peakStart or beginning of peakEnd \n");              
+      //up cost is min of prev_up, min_less(prev+down + penalty)
+      cost_of_change_up.set_to_min_less_of(&down_cost_prev, verbose);
+      //seg end  
+      cost_of_change_up.set_prev_seg_end(data_i-1);
+      cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
+      up_cost->set_to_min_env_of(&up_cost_prev, &cost_of_change_up, verbose);
+      
     }
-
+    
     //---DOWN COST CALCULATIONS--- 
     if(data_i==0){
       // initialization Cdown_1(m)=gamma_1(m)/w_1
       down_cost->piece_list.emplace_back
       (1.0, -data_vec[0], 0.0,
        min_log_mean, max_log_mean, -1, false);
-
+      
     }
     //if at beginning of peak end or end of peak start, infinite down
     else if((curr_label_type == LABEL_PEAKEND && at_beginning) ||
-       (curr_label_type == LABEL_PEAKSTART && at_end)){
-Rprintf("DOWN: at beginning of peak end of end of peak start \n");
+            (curr_label_type == LABEL_PEAKSTART && at_end)){
+     // Rprintf("DOWN: at beginning of peak end of end of peak start \n");
       down_cost->set_infinite();
     }
     
     //if not at beginning of noPeaks or middle of peak start
     else if((curr_label_type == LABEL_NOPEAKS && !at_beginning)
-         || (curr_label_type == LABEL_PEAKSTART && !at_beginning && !at_end)){
-Rprintf("DOWN: at not beginning of no peaks or middle of peak start \n");     
+              || (curr_label_type == LABEL_PEAKSTART && !at_beginning && !at_end)){
+     // Rprintf("DOWN: at not beginning of no peaks or middle of peak start \n");     
       *down_cost = down_cost_prev;
       
     }
@@ -145,31 +145,31 @@ Rprintf("DOWN: at not beginning of no peaks or middle of peak start \n");
               || (curr_label_type == LABEL_PEAKSTART && at_beginning)
               || (curr_label_type == LABEL_NOPEAKS && at_beginning)
               || (curr_label_type == LABEL_PEAKEND && !at_beginning)){
-Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not beginning of peak end! doing change down or beginning no peaks \n");              
-              //down cost is min(prev_down, min_more(prev_up + penalty))
-
+             // Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not beginning of peak end! doing change down or beginning no peaks \n");              
+      //down cost is min(prev_down, min_more(prev_up + penalty))
+      
       cost_of_change_down.set_to_min_more_of(&up_cost_prev, verbose);
       cost_of_change_down.set_prev_seg_end(data_i-1);
       cost_of_change_down.addPenalty(penalty, cum_weight_prev_i);
       down_cost->set_to_min_env_of(&down_cost_prev, &cost_of_change_down, verbose);
-
+      
     } 
-
+    
     up_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
                            data_i, data_vec);
     down_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
                              data_i, data_vec);
     
-
+    
     cum_weight_prev_i = cum_weight_i;
     up_cost_prev = *up_cost;
     down_cost_prev = *down_cost;
-Rprintf("\n\n");
+    Rprintf("\n\n");
     
   }
   
   
-
+  
   // Decoding the cost_model_vec, and writing to the output matrices.
   double best_cost, best_log_mean, prev_log_mean;
   int prev_seg_end=data_count;
@@ -177,7 +177,7 @@ Rprintf("\n\n");
   best_cost = INFINITY;
   double best_prev_seg_end, best_prev_log_mean,
   up_or_down_cost_value, up_or_down_log_mean,  up_or_down_prev_log_mean;
-  int up_or_down_prev_seg_end;
+  int up_or_down_prev_seg_end, best_seg_offset;
   
   
   for(int i=0; i<data_count; i++){
@@ -193,43 +193,45 @@ Rprintf("\n\n");
   }
   // last segment is down (offset N) so the second to last segment is
   // up (offset 0).
-  int prev_seg_offset = 0;
-
+  int prev_seg_offset;
+  
   for(int up_or_down = 1; up_or_down <= 2; up_or_down++){
-       up_or_down_cost = &cost_model_mat[data_count*up_or_down - 1];
-       up_or_down_cost->Minimize(&up_or_down_cost_value, &up_or_down_log_mean,
-                                  &up_or_down_prev_seg_end, &up_or_down_prev_log_mean);
-       if(up_or_down_cost_value < best_cost){
-            best_cost = up_or_down_cost_value;
-            best_log_mean = up_or_down_log_mean;
-            best_prev_seg_end = up_or_down_prev_seg_end;
-            best_prev_log_mean = up_or_down_prev_log_mean;
-         }
+    //if last cost is up
+    if(up_or_down==1){
+         prev_seg_offset = data_count; //previous cost down
+      }
+    else{
+         prev_seg_offset = 0;
+      }
+    
+    up_or_down_cost = &cost_model_mat[data_count*up_or_down - 1];
+    up_or_down_cost->Minimize(&up_or_down_cost_value, &up_or_down_log_mean,
+                              &up_or_down_prev_seg_end, &up_or_down_prev_log_mean);
+    if(up_or_down_cost_value < best_cost){
+      best_cost = up_or_down_cost_value;
+      best_log_mean = up_or_down_log_mean;
+      best_prev_seg_end = up_or_down_prev_seg_end;
+      best_prev_log_mean = up_or_down_prev_log_mean;
+      best_seg_offset = prev_seg_offset;
     }
+  }
   
   mean_vec[0] = exp(best_log_mean);
   end_vec[0] = best_prev_seg_end;
   prev_seg_end = best_prev_seg_end;
+  prev_seg_offset = best_seg_offset;
   int out_i=1;
   while(0 <= prev_seg_end){
-Rprintf("\n\n IN WHILE \n\n");    
     // up_cost is actually either an up or down cost.
     up_or_down_cost = &cost_model_mat[prev_seg_offset + prev_seg_end];
-//Rprintf("decoding out_i=%d prev_seg_end=%d prev_seg_offset=%d\n", out_i, prev_seg_end, prev_seg_offset);
+    //Rprintf("decoding out_i=%d prev_seg_end=%d prev_seg_offset=%d\n", out_i, prev_seg_end, prev_seg_offset);
     if(prev_log_mean != INFINITY){
       //equality constraint inactive
       best_log_mean = prev_log_mean;
     }
-    
-    
-    
-    
     up_or_down_cost->findMean
       (best_log_mean, &prev_seg_end, &prev_log_mean);
-Rprintf("up cost here is \n");
-up_cost->print();
     mean_vec[out_i] = exp(best_log_mean);
-Rprintf("setting mean_vec[out_i] to %d \n", mean_vec[out_i]);
     end_vec[out_i] = prev_seg_end;
     // change prev_seg_offset and out_i for next iteration.
     if(prev_seg_offset==0){
@@ -240,10 +242,8 @@ Rprintf("setting mean_vec[out_i] to %d \n", mean_vec[out_i]);
       prev_seg_offset = 0;
     }
     out_i++;
-Rprintf("leaving loop with prev_seg_end %d \n", prev_seg_end);
-     
   }
-     
-return 0;
+  
+  return 0;
 }
 
