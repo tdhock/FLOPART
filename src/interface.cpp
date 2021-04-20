@@ -1,19 +1,19 @@
 /*-*- compile-command: "R CMD INSTALL .." -*- */
   
 #include "funPieceListLog.h"
-#include "PeakSegFPOPLog.h"
+#include "FLOPART.h"
 #include <R.h>
 #include <R_ext/Rdynload.h>
   
 
-  void PeakSegFPOPLog_interface
+  void FLOPART_interface
     (int *data_ptr, double *weight_ptr,
      int *data_count, double *penalty,
      double *cost_mat, int *end_vec,
      double *mean_vec, int *intervals_mat,
      int *label_starts, int *label_ends,
      int *label_types, int *label_count){
-    int status = PeakSegFPOPLog
+    int status = FLOPART
     (data_ptr, weight_ptr,
      *data_count, *penalty,
      cost_mat, end_vec, mean_vec, intervals_mat, label_starts,
@@ -25,7 +25,7 @@
   
   R_CMethodDef cMethods[] = {
     {"PeakSegFPOPLog_interface",
-     (DL_FUNC) &PeakSegFPOPLog_interface, 12
+     (DL_FUNC) &FLOPART_interface, 12
       //,{INTSXP, REALSXP, REALSXP, INTSXP}
     },
     {NULL, NULL, 0} 

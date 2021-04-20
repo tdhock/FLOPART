@@ -4,7 +4,7 @@
 #define LABEL_UNLABELED -2
 
 
-int PeakSegFPOPLog
+int FLOPART
 (int *data_vec, double *weight_vec,
  int data_count, double penalty,
  // the following matrices are for output.

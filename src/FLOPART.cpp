@@ -5,9 +5,9 @@
 #include "funPieceListLog.h"
 #include <math.h>
 #include <R.h> // for Rprintf
-#include "PeakSegFPOPLog.h"
+#include "FLOPART.h"
 
-int PeakSegFPOPLog
+int FLOPART
   (int *data_vec, double *weight_vec, int data_count,
    double penalty,
    // the following matrices are for output.
