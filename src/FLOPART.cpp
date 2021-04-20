@@ -174,9 +174,12 @@ int FLOPART
   PiecewisePoissonLossLog *up_or_down_cost;
   double best_cost = INFINITY;
   double best_log_mean = INFINITY;
-  double best_prev_log_mean,
-  up_or_down_cost_value, up_or_down_log_mean,  up_or_down_prev_log_mean;
-  int up_or_down_prev_seg_end, best_prev_seg_end;
+  double best_prev_log_mean;
+  int best_prev_seg_end;
+  double up_or_down_cost_value;
+  double up_or_down_log_mean;
+  double up_or_down_prev_log_mean;
+  int up_or_down_prev_seg_end;
   
   
   for(int i=0; i<data_count; i++){
@@ -226,6 +229,9 @@ int FLOPART
       
       best_log_mean = best_prev_log_mean;
     }
+Rprintf("passing in best_log_mean? %f \n", best_log_mean);
+Rprintf("and best_prev_seg_end? %d \n", best_prev_seg_end);
+Rprintf("and best_prev_log_mean? %f \n", best_prev_log_mean);
     up_or_down_cost->findMean
       (best_log_mean, &best_prev_seg_end, &best_prev_log_mean);
     mean_vec[out_i] = exp(best_log_mean);

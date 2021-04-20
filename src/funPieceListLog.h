@@ -10,6 +10,7 @@
 // recompiles object files when there are changes to *.cpp but not *.h
 // files.
 
+
 class PoissonLossPieceLog {
 public:
   double Linear;
@@ -69,3 +70,12 @@ public:
 };
 
 bool sameFuns(PoissonLossPieceListLog::iterator, PoissonLossPieceListLog::iterator);
+
+struct upOrDownCost{
+  PiecewisePoissonLossLog cost_fun;
+  double up_or_down_cost_value;
+  double up_or_down_log_mean;
+  double up_or_down_prev_log_mean;
+  int up_or_down_prev_seg_end;
+};
+
