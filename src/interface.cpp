@@ -24,7 +24,7 @@
   }
   
   R_CMethodDef cMethods[] = {
-    {"PeakSegFPOPLog_interface",
+    {"FLOPART_interface",
      (DL_FUNC) &FLOPART_interface, 12
       //,{INTSXP, REALSXP, REALSXP, INTSXP}
     },
