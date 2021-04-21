@@ -11,7 +11,7 @@ remotes::install_github("alyssajs/FLOPART)
 ```
 
 # Usage
-The main driver function is FLOPART, which takes  
+The main driver function is FLOPART, which takes    
 Markup : * `data_vec` An integer vector of data   
         * `weight_vec` A double vector of weights for each data point  
         * `data_count` The number of data points  
