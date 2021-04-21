@@ -12,7 +12,7 @@ remotes::install_github("alyssajs/FLOPART)
 
 # Usage
 The main driver function is FLOPART, which takes    
-*`data_vec` An integer vector of data   
+* `data_vec` An integer vector of data   
 * `weight_vec` A double vector of weights for each data point  
 * `data_count` The number of data points (an integer)
 * `penalty` The penalty value (a double)
