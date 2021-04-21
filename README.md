@@ -1,7 +1,7 @@
 # FLOPART 
 Functional Labeled Optimal Partitioning - A peak detection algorithm that allows for three types of labels.
 
-#Installation
+# Installation
 
 ```r
 install.packages("FLOPART")
@@ -10,9 +10,9 @@ if(require("remotes"))install.packages("remotes")
 remotes::install_github("alyssajs/FLOPART)
 ```
 
-#Usage
+# Usage
 The main driver function is FLOPART, which takes
-        * ```r data_vec``` An integer vector of data   
+Markup : * ```r data_vec``` An integer vector of data   
         * ```r weight_vec``` A double vector of weights for each data point  
         * ```r data_count``` The number of data points  
         * ```r penalty``` The penalty value  
