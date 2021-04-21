@@ -1,6 +1,6 @@
 library(FLOPART)
 data_count = 6L
-data_vec <- as.integer(c(1,2,10,10,10,1))
+data_vec <- as.integer(c(1,10,10,10,10,1))
 weight_vec <- as.double(rep(1, data_count))
 penalty <- as.double(0)
 cost_mat <- numeric(data_count * 2)

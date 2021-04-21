@@ -10,6 +10,14 @@
 // recompiles object files when there are changes to *.cpp but not *.h
 // files.
 
+struct MinimizeResult{
+  double cost;
+  double log_mean;
+  double prev_log_mean;
+  int prev_seg_end;
+  int prev_seg_offset;
+};
+
 
 class PoissonLossPieceLog {
 public:
@@ -55,13 +63,10 @@ public:
   void multiply(double);
   void print();
   void set_prev_seg_end(int prev_seg_end);
-  void findMean(double mean, int *seg_end, double *prev_log_mean);
+  void findMean(MinimizeResult *bestMinResult);
   double findCost(double mean);
   void Minimize
-    (double *best_cost,
-     double *best_mean,
-     int *data_i,
-     double *prev_log_mean);
+    (MinimizeResult *res);
   void adjustWeights(double cum_weight_prev_i,double cum_weight_i, 
                                               double *weight_vec, int data_i,
                                               int *data_vec);
@@ -70,12 +75,4 @@ public:
 };
 
 bool sameFuns(PoissonLossPieceListLog::iterator, PoissonLossPieceListLog::iterator);
-
-struct upOrDownCost{
-  PiecewisePoissonLossLog cost_fun;
-  double up_or_down_cost_value;
-  double up_or_down_log_mean;
-  double up_or_down_prev_log_mean;
-  int up_or_down_prev_seg_end;
-};
 

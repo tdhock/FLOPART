@@ -648,12 +648,12 @@ void PiecewisePoissonLossLog::set_prev_seg_end(int prev_seg_end){
 }
 
 void PiecewisePoissonLossLog::findMean
-  (double log_mean, int *seg_end, double *prev_log_mean){
+  (MinimizeResult *bestMinResult){
   PoissonLossPieceListLog::iterator it;
   for(it=piece_list.begin(); it != piece_list.end(); it++){
-    if(it->min_log_mean <= log_mean && log_mean <= it->max_log_mean){
-      *seg_end = it->data_i;
-      *prev_log_mean = it->prev_log_mean;
+    if(it->min_log_mean <= bestMinResult->log_mean && bestMinResult->log_mean <= it->max_log_mean){
+      bestMinResult->prev_seg_end = it->data_i;
+      bestMinResult->prev_log_mean = it->prev_log_mean;
       return;
     }
   }
@@ -689,14 +689,11 @@ void PoissonLossPieceLog::print(){
 }
 
 void PiecewisePoissonLossLog::Minimize
-  (double *best_cost,
-   double *best_log_mean,
-   int *data_i,
-   double *prev_log_mean){
+  (MinimizeResult *res){
   double candidate_cost, candidate_log_mean;
   int verbose=false;
   PoissonLossPieceListLog::iterator it;
-  *best_cost = INFINITY;
+  res->cost = INFINITY;
   for(it=piece_list.begin(); it != piece_list.end(); it++){
     candidate_log_mean = it->argmin();
     if(candidate_log_mean < it->min_log_mean){
@@ -705,11 +702,11 @@ void PiecewisePoissonLossLog::Minimize
       candidate_log_mean = it->max_log_mean;
     }
     candidate_cost = it->getCost(candidate_log_mean);
-    if(candidate_cost < *best_cost){
-      *best_cost = candidate_cost;
-      *best_log_mean = candidate_log_mean;
-      *data_i = it->data_i;
-      *prev_log_mean = it->prev_log_mean;
+    if(candidate_cost < res->cost){
+      res->cost = candidate_cost;
+      res->log_mean = candidate_log_mean;
+      res->prev_seg_end = it->data_i;
+      res->prev_log_mean = it->prev_log_mean;
     }
   }
 }

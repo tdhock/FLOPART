@@ -46,7 +46,7 @@ int FLOPART
   PiecewisePoissonLossLog up_cost_prev, down_cost_prev,
   cost_of_change_up, cost_of_change_down;
   int verbose=0;
-  double cum_weight_i = 0.0, cum_weight_prev_i;
+  double cum_weight_i = 0.0, cum_weight_prev_i = 0.0;
   
   
   for(int data_i=0; data_i<data_count; data_i++){
@@ -99,9 +99,9 @@ int FLOPART
     else if(curr_label_type == LABEL_NOPEAKS || (curr_label_type == LABEL_PEAKSTART 
                                                    && at_beginning)
               || (curr_label_type == LABEL_PEAKEND && at_end)){
-             // Rprintf("UP: in no peaks or beginning of peak start or end of peak end \n");   
-      //up cost is infinite
-      up_cost->set_infinite();
+              // Rprintf("UP: in no peaks or beginning of peak start or end of peak end \n");   
+              //up cost is infinite
+              up_cost->set_infinite();
     }
     
     //if unlabeled or not beginning of peak start or beginning of peak end  
@@ -109,8 +109,8 @@ int FLOPART
               || (curr_label_type== LABEL_PEAKSTART && !at_beginning) 
               || (curr_label_type == LABEL_PEAKEND && at_beginning)){
               //Rprintf("UP: unlabeled or not beginning of peakStart or beginning of peakEnd \n");              
-      //up cost is min of prev_up, min_less(prev+down + penalty)
-      cost_of_change_up.set_to_min_less_of(&down_cost_prev, verbose);
+              //up cost is min of prev_up, min_less(prev+down + penalty)
+              cost_of_change_up.set_to_min_less_of(&down_cost_prev, verbose);
       //seg end  
       cost_of_change_up.set_prev_seg_end(data_i-1);
       cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
@@ -129,14 +129,14 @@ int FLOPART
     //if at beginning of peak end or end of peak start, infinite down
     else if((curr_label_type == LABEL_PEAKEND && at_beginning) ||
             (curr_label_type == LABEL_PEAKSTART && at_end)){
-     // Rprintf("DOWN: at beginning of peak end of end of peak start \n");
+      // Rprintf("DOWN: at beginning of peak end of end of peak start \n");
       down_cost->set_infinite();
     }
     
     //if not at beginning of noPeaks or middle of peak start
     else if((curr_label_type == LABEL_NOPEAKS && !at_beginning)
               || (curr_label_type == LABEL_PEAKSTART && !at_beginning && !at_end)){
-     // Rprintf("DOWN: at not beginning of no peaks or middle of peak start \n");     
+      // Rprintf("DOWN: at not beginning of no peaks or middle of peak start \n");     
       *down_cost = down_cost_prev;
       
     }
@@ -145,10 +145,10 @@ int FLOPART
               || (curr_label_type == LABEL_PEAKSTART && at_beginning)
               || (curr_label_type == LABEL_NOPEAKS && at_beginning)
               || (curr_label_type == LABEL_PEAKEND && !at_beginning)){
-             // Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not beginning of peak end! doing change down or beginning no peaks \n");              
-      //down cost is min(prev_down, min_more(prev_up + penalty))
-      
-      cost_of_change_down.set_to_min_more_of(&up_cost_prev, verbose);
+              // Rprintf("DOWN: in unlabeled, beginning peak start, beginning no peaks,  or not beginning of peak end! doing change down or beginning no peaks \n");              
+              //down cost is min(prev_down, min_more(prev_up + penalty))
+              
+              cost_of_change_down.set_to_min_more_of(&up_cost_prev, verbose);
       cost_of_change_down.set_prev_seg_end(data_i-1);
       cost_of_change_down.addPenalty(penalty, cum_weight_prev_i);
       down_cost->set_to_min_env_of(&down_cost_prev, &cost_of_change_down, verbose);
@@ -172,14 +172,10 @@ int FLOPART
   
   // Decoding the cost_model_vec, and writing to the output matrices.
   PiecewisePoissonLossLog *up_or_down_cost;
-  double best_cost = INFINITY;
-  double best_log_mean = INFINITY;
-  double best_prev_log_mean;
-  int best_prev_seg_end;
-  double up_or_down_cost_value;
-  double up_or_down_log_mean;
-  double up_or_down_prev_log_mean;
-  int up_or_down_prev_seg_end;
+  MinimizeResult minResult, bestMinResult;
+  bestMinResult.cost = INFINITY;
+  bestMinResult.log_mean = INFINITY;
+  
   
   
   for(int i=0; i<data_count; i++){
@@ -189,60 +185,47 @@ int FLOPART
   for(int i=0; i<2*data_count; i++){
     up_or_down_cost = &cost_model_mat[i];
     intervals_mat[i] = (up_or_down_cost->piece_list).size();
-    up_or_down_cost->Minimize(cost_mat+i, &up_or_down_log_mean,
-                                &up_or_down_prev_seg_end, &up_or_down_prev_log_mean);
+    minResult.cost = *cost_mat+i;
+    up_or_down_cost->Minimize(&minResult);
+    cost_mat[i] = minResult.cost;
+    
   }
-  // last segment is down (offset N) so the second to last segment is
-  // up (offset 0).
-  int best_prev_seg_offset = -5;
-  int prev_seg_offset;
   
   for(int up_or_down = 1; up_or_down <= 2; up_or_down++){
     //if last cost is up
     if(up_or_down==1){
-         prev_seg_offset = data_count; //previous cost down
-      }
+      minResult.prev_seg_offset = data_count; //previous cost down
+    }
     else{
-         prev_seg_offset = 0;
-      }
+      minResult.prev_seg_offset = 0;
+    }
     
     up_or_down_cost = &cost_model_mat[data_count*up_or_down - 1];
-    up_or_down_cost->Minimize(&up_or_down_cost_value, &up_or_down_log_mean,
-                              &up_or_down_prev_seg_end, &up_or_down_prev_log_mean);
-    if(up_or_down_cost_value < best_cost){
-      best_cost = up_or_down_cost_value;
-      best_log_mean = up_or_down_log_mean;
-      best_prev_seg_end = up_or_down_prev_seg_end;
-      best_prev_log_mean = up_or_down_prev_log_mean;
-      best_prev_seg_offset = prev_seg_offset;
+    up_or_down_cost->Minimize(&minResult);
+    if(minResult.cost < bestMinResult.cost){
+      bestMinResult = minResult;
     }
   }
-  
-  mean_vec[0] = exp(best_log_mean);
-  end_vec[0] = best_prev_seg_end;
+  mean_vec[0] = exp(bestMinResult.log_mean);
+  end_vec[0] = bestMinResult.prev_seg_end;
   int out_i=1;
-  while(0 <= best_prev_seg_end){
-    up_or_down_cost = &cost_model_mat[best_prev_seg_offset + best_prev_seg_end];
-    //Rprintf("decoding out_i=%d prev_seg_end=%d prev_seg_offset=%d\n", out_i, prev_seg_end, prev_seg_offset);
-    if(best_prev_log_mean != INFINITY){
+  while(0 <= bestMinResult.prev_seg_end){
+    up_or_down_cost = &cost_model_mat[bestMinResult.prev_seg_offset + bestMinResult.prev_seg_end];
+    if(bestMinResult.prev_log_mean != INFINITY){
       //equality constraint inactive
-      
-      best_log_mean = best_prev_log_mean;
+      bestMinResult.log_mean = bestMinResult.prev_log_mean;
     }
-Rprintf("passing in best_log_mean? %f \n", best_log_mean);
-Rprintf("and best_prev_seg_end? %d \n", best_prev_seg_end);
-Rprintf("and best_prev_log_mean? %f \n", best_prev_log_mean);
     up_or_down_cost->findMean
-      (best_log_mean, &best_prev_seg_end, &best_prev_log_mean);
-    mean_vec[out_i] = exp(best_log_mean);
-    end_vec[out_i] = best_prev_seg_end;
+      (&bestMinResult);
+    mean_vec[out_i] = exp(bestMinResult.log_mean);
+    end_vec[out_i] = bestMinResult.prev_seg_end;
     // change prev_seg_offset and out_i for next iteration.
-    if(prev_seg_offset==0){
+    if(bestMinResult.prev_seg_offset==0){
       //up_cost is actually up
-      prev_seg_offset = data_count;
+      bestMinResult.prev_seg_offset = data_count;
     }else{
       //up_cost is actually down
-      prev_seg_offset = 0;
+      bestMinResult.prev_seg_offset = 0;
     }
     out_i++;
   }
