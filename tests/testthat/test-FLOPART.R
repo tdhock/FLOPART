@@ -20,7 +20,7 @@ PoissonLoss <- function(meanVal, dataVal){
 test_that("costs are correct for noPeaks label",
           {
             label_types <- 0L
-              .C("FLOPART_interface", data_vec = data_vec, weight_vec = weight_vec,
+            result <- .C("FLOPART_interface", data_vec = data_vec, weight_vec = weight_vec,
                  data_count = data_count, penalty = penalty, cost_mat = cost_mat,
                  end_vec = end_vec, mean_vec = mean_vec, intervals_mat = intervals_mat,
                  label_starts = label_starts, label_ends = label_ends,
@@ -33,6 +33,23 @@ test_that("costs are correct for noPeaks label",
             expect_true(is.infinite(costMatrix[1,2]))
             expect_true(is.infinite(costMatrix[1,3]))
             expect_true(is.infinite(costMatrix[1,4]))
+          })
+test_that("means are correct for noPeaks label",
+          {
+            label_types <- 0L
+            result <- .C("FLOPART_interface", data_vec = data_vec, weight_vec = weight_vec,
+               data_count = data_count, penalty = penalty, cost_mat = cost_mat,
+               end_vec = end_vec, mean_vec = mean_vec, intervals_mat = intervals_mat,
+               label_starts = label_starts, label_ends = label_ends,
+               label_types = label_types, label_count = label_count,
+               PACKAGE="FLOPART")
+            
+            costMatrix <- matrix(result[["cost_mat"]], nrow=2, ncol=data_count, 
+                                 byrow=TRUE)
+            meanVec <- result[["mean_vec"]]
+            
+            expect_equal(meanVec[1], 5.0)
+            expect_equal(meanVec[2], 2.5)
           })
 test_that("first of peak start cost and last of peak start down costs are infinite",
           {
