@@ -89,8 +89,8 @@ double PoissonLossPieceLog::get_larger_root(double equals){
   // find the larger root of f(m) = Linear*m + Log*log(m) + Constant -
   // equals = 0.
   double candidate_cost, possibly_outside, deriv;
-  double closest_positive_cost = INFINITY, closest_positive_mean;
-  double closest_negative_cost = -INFINITY, closest_negative_mean;
+  double closest_positive_cost = INFINITY, closest_positive_mean = INFINITY;
+  double closest_negative_cost = -INFINITY, closest_negative_mean = -INFINITY;
   if(optimal_cost < 0){
     closest_negative_cost = optimal_cost;
     closest_negative_mean = optimal_mean;
@@ -163,8 +163,8 @@ double PoissonLossPieceLog::get_smaller_root(double equals){
   double candidate_cost, possibly_outside, deriv;
   // as we search we will store bounds on the left and the right of
   // the zero point.
-  double closest_positive_cost = INFINITY, closest_positive_log_mean;
-  double closest_negative_cost = -INFINITY, closest_negative_log_mean;
+  double closest_positive_cost = INFINITY, closest_positive_log_mean = INFINITY;
+  double closest_negative_cost = -INFINITY, closest_negative_log_mean = -INFINITY;
   if(optimal_cost < 0){
     closest_negative_cost = optimal_cost;
     closest_negative_log_mean = optimal_log_mean;
@@ -265,7 +265,7 @@ void PiecewisePoissonLossLog::set_to_min_less_of
   //if input is infinite, return infinity
   if(input->is_infinite())
   {
-    Rprintf("infinite input! \n");
+    if(verbose)Rprintf("Input is infinite \n");
      return;
   }
   PoissonLossPieceListLog::iterator it = input->piece_list.begin();
@@ -283,7 +283,7 @@ void PiecewisePoissonLossLog::set_to_min_less_of
         Rprintf("Searching for min in\n");
         it->print();
       }
-      double next_left_cost;
+      double next_left_cost = INFINITY;
       next_it = it;
       next_it++;
       if(it->Log==0){
@@ -299,7 +299,7 @@ void PiecewisePoissonLossLog::set_to_min_less_of
         // right of the interval are equal.
         double right_left_diff = right_cost - left_cost;
         if(verbose)Rprintf("right_cost-left_cost=%e\n", right_left_diff);
-        bool right_left_equal = right_left_diff < NEWTON_EPSILON;
+        //bool right_left_equal = right_left_diff < NEWTON_EPSILON;
         bool next_cost_more_than_left;
         if(next_it == input->piece_list.end()){
           next_cost_more_than_left = true;
@@ -663,7 +663,7 @@ double PiecewisePoissonLossLog::findCost(double mean){
   PoissonLossPieceListLog::iterator it;
   for(it=piece_list.begin(); it != piece_list.end(); it++){
     if(it->min_log_mean <= mean && mean <= it->max_log_mean){
-      int verbose = 0;
+      //int verbose = 0;
       return it->getCost(mean);
     }
   }
@@ -691,7 +691,7 @@ void PoissonLossPieceLog::print(){
 void PiecewisePoissonLossLog::Minimize
   (MinimizeResult *res){
   double candidate_cost, candidate_log_mean;
-  int verbose=false;
+  //int verbose=false;
   PoissonLossPieceListLog::iterator it;
   res->cost = INFINITY;
   for(it=piece_list.begin(); it != piece_list.end(); it++){
@@ -715,7 +715,7 @@ void PiecewisePoissonLossLog::Minimize
 int PiecewisePoissonLossLog::check_min_of
   (PiecewisePoissonLossLog *prev, PiecewisePoissonLossLog *model){
   PoissonLossPieceListLog::iterator it;
-  int verbose = 0;
+  //int verbose = 0;
   for(it = piece_list.begin(); it != piece_list.end(); it++){
     if(it != piece_list.begin()){
       PoissonLossPieceListLog::iterator pit = it;
