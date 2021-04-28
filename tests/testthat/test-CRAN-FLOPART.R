@@ -54,3 +54,21 @@ test_that("last of peak end down cost and first of peak end up cost are infinite
   expect_true(is.infinite(costMatrix[1,4]))
 })
 
+label_code <- FLOPART::get_label_code()
+test_that("get_label_code works", {
+  expect_true(all(c("noPeaks", "peakStart", "peakEnd") %in% names(label_code)))
+})
+
+label <- function(type, start, end){
+  data.frame(type=label_code[type], start, end, row.names=NULL)
+}
+two.labels <- rbind(
+  label("noPeaks", 2, 3),
+  label("peakEnd", 3, 4))
+test_that("error for overlapping labels", {
+  expect_error({
+    with(two.labels, FLOPART::FLOPART_interface(
+      data_vec, weight_vec, penalty,
+      type, start, end))
+  }, "label start should be greater than previous label end")
+})

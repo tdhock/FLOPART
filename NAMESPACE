@@ -1,3 +1,4 @@
 useDynLib(FLOPART, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
 export(FLOPART_interface)
+export(get_label_code)

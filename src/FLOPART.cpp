@@ -22,6 +22,28 @@ int FLOPART
    double *mean_vec,//data_count
    int *intervals_mat//data_count x 2
    ){
+  for(int label_i=0; label_i < label_count; label_i++){
+    if(label_starts[label_i] < 0){
+      return ERROR_LABEL_START_MUST_BE_AT_LEAST_ZERO;
+    }
+    if(data_count <= label_ends[label_i]){
+      return ERROR_LABEL_END_MUST_BE_LESS_THAN_DATA_SIZE;
+    }
+    if(label_ends[label_i] < label_starts[label_i]){
+      return ERROR_LABEL_END_MUST_BE_AT_LEAST_LABEL_START;
+    }
+    if(0 < label_i && label_starts[label_i] <= label_ends[label_i-1]){
+      return ERROR_LABEL_START_SHOULD_BE_GREATER_THAN_PREVIOUS_LABEL_END;
+    }
+    switch(label_types[label_i]){
+    case LABEL_NOPEAKS:
+    case LABEL_PEAKSTART:
+    case LABEL_PEAKEND:
+      break;
+    default:
+      return ERROR_UNRECOGNIZED_LABEL_TYPE;
+    }
+  }
   bool at_beginning = false;
   bool at_end = false;  
   int curr_label_index = 0;

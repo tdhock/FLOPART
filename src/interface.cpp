@@ -2,6 +2,16 @@
 #include <R.h>
 #include "FLOPART.h"
 
+//' Lookup the integer values used to represent different label types
+//'
+//' @return Integer vector with names corresponding to supported label types
+// [[Rcpp::export]]
+Rcpp::IntegerVector get_label_code(){
+  Rcpp::IntegerVector code {LABEL_NOPEAKS, LABEL_PEAKSTART, LABEL_PEAKEND};
+  code.names() = Rcpp::CharacterVector {"noPeaks", "peakStart", "peakEnd"};
+  return code;
+}
+
 //' Interface to FLOPART C++ code
 //'
 //' @param data_vec Integer vector of non-negative count data
@@ -45,6 +55,21 @@ Rcpp::List FLOPART_interface
      );
   if(status == ERROR_MIN_MAX_SAME){
     Rcpp::stop("data[i]=%d for all i", data_vec[0]);
+  }
+  if(status == ERROR_LABEL_END_MUST_BE_AT_LEAST_LABEL_START){
+    Rcpp::stop("label end must be at least label start");
+  }
+  if(status == ERROR_LABEL_START_SHOULD_BE_GREATER_THAN_PREVIOUS_LABEL_END){
+    Rcpp::stop("label start should be greater than previous label end");
+  }
+  if(status == ERROR_UNRECOGNIZED_LABEL_TYPE){
+    Rcpp::stop("unrecognized label type");
+  }
+  if(status == ERROR_LABEL_END_MUST_BE_LESS_THAN_DATA_SIZE){
+    Rcpp::stop("label end must be less than data size");
+  }
+  if(status == ERROR_LABEL_START_MUST_BE_AT_LEAST_ZERO){
+    Rcpp::stop("label start must be at least zero");
   }
   //convert to segments data table.
   int seg_count=1;

@@ -2,6 +2,8 @@
 
 Rcpp instead of .C for C++ interface.
 
+export get_label_code and FLOPART_interface R functions.
+
 2021.4.27
 
 new C++ classes CostMatrix and MinimizeResult with helpful methods
