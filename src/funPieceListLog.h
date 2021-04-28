@@ -1,8 +1,5 @@
-/* -*- compile-command: "R CMD INSTALL .." -*- */
-
-
-#define ERROR_MIN_MAX_SAME 1
 #include <list>
+#include <vector>
 
 // NOTE: please only define prototypes in this file (do not define
 // methods directly -- instead define them in funPieceList.cpp). This
@@ -10,14 +7,15 @@
 // recompiles object files when there are changes to *.cpp but not *.h
 // files.
 
-struct MinimizeResult{
+class MinimizeResult{
+public:
   double cost;
   double log_mean;
   double prev_log_mean;
   int prev_seg_end;
   int prev_seg_offset;
+  void write_mean_end(double *mean_vec, int *end_vec, int offset);
 };
-
 
 class PoissonLossPieceLog {
 public:
@@ -67,12 +65,20 @@ public:
   double findCost(double mean);
   void Minimize
     (MinimizeResult *res);
-  void adjustWeights(double cum_weight_prev_i,double cum_weight_i, 
-                                              double *weight_vec, int data_i,
-                                              int *data_vec);
-  
+  void adjustWeights
+  (const double,const double,const double*,const int,const int*);
   void addPenalty(double penalty, double cum_weight_prev_i);
 };
 
 bool sameFuns(PoissonLossPieceListLog::iterator, PoissonLossPieceListLog::iterator);
+
+class CostMatrix {
+ public:
+  std::vector<PiecewisePoissonLossLog> cost_vec;
+  int data_count;
+  MinimizeResult minimize();
+  CostMatrix(int);
+  void copy_min_cost_intervals(double*, int*);
+  void decode_optimal_mean_end(double*, int*);
+};
 

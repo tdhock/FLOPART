@@ -1,44 +1,80 @@
-/*-*- compile-command: "R CMD INSTALL .." -*- */
-  
-#include "funPieceListLog.h"
-#include "FLOPART.h"
+#include <Rcpp.h>
 #include <R.h>
-#include <R_ext/Rdynload.h>
-  
+#include "FLOPART.h"
 
-  void FLOPART_interface
-    (int *data_ptr, double *weight_ptr,
-     int *data_count, double *penalty,
-     double *cost_mat, int *end_vec,
-     double *mean_vec, int *intervals_mat,
-     int *label_starts, int *label_ends,
-     int *label_types, int *label_count){
-    int status = FLOPART
-    (data_ptr, weight_ptr,
-     *data_count, *penalty,
-     cost_mat, end_vec, mean_vec, intervals_mat, label_starts,
-     label_ends, label_types, *label_count);
-    if(status == ERROR_MIN_MAX_SAME){
-      error("data[i]=%d for all i", data_ptr[0]);
+//' Interface to FLOPART C++ code
+//'
+//' @param data_vec Integer vector of non-negative count data
+//' @param weight_vec Numeric vector of positive weights (same size as data_vec)
+//' @param penalty non-negative real-valued penalty (larger for fewer peaks)
+//' @param label_type_vec Integer vector of label types
+//' @param label_start_vec Integer vector of label starts
+//' @param label_end_vec Integer vector of label ends
+//' @return List with named elements: cost_mat and intervals_mat (one row for each data point, first column up, second down), segments_df (one row for each segment in the optimal model)
+// [[Rcpp::export]]
+Rcpp::List FLOPART_interface
+(const Rcpp::IntegerVector data_vec,
+ const Rcpp::NumericVector weight_vec,
+ const double penalty,
+ const Rcpp::IntegerVector label_type_vec,
+ const Rcpp::IntegerVector label_start_vec,
+ const Rcpp::IntegerVector label_end_vec){
+  int data_count = data_vec.size();
+  if(data_count < 2){
+    Rcpp::stop("need at least two data points");
+  }
+  if(data_count != weight_vec.size()){
+    Rcpp::stop("data_vec and weight_vec should be same size");
+  }
+  int label_count = label_type_vec.size();
+  if(label_count != label_start_vec.size()){
+    Rcpp::stop("label_start_vec and label_type_vec should be same size");
+  }
+  if(label_count != label_end_vec.size()){
+    Rcpp::stop("label_end_vec and label_type_vec should be same size");
+  }
+  Rcpp::NumericMatrix cost_mat(data_count, 2);
+  Rcpp::IntegerMatrix intervals_mat(data_count, 2);
+  Rcpp::IntegerVector rev_end_vec(data_count);
+  Rcpp::NumericVector rev_mean_vec(data_count);
+  int status = FLOPART
+    (&data_vec[0], &weight_vec[0],
+     data_count, penalty,
+     &label_type_vec[0], &label_start_vec[0], &label_end_vec[0], label_count,
+     &cost_mat[0], &rev_end_vec[0], &rev_mean_vec[0], &intervals_mat[0]
+     );
+  if(status == ERROR_MIN_MAX_SAME){
+    Rcpp::stop("data[i]=%d for all i", data_vec[0]);
+  }
+  //convert to segments data table.
+  int seg_count=1;
+  while(seg_count < data_count && 0 <= rev_end_vec[seg_count-1]){
+    seg_count++;
+  }
+  Rcpp::NumericVector seg_mean_vec(seg_count);
+  Rcpp::IntegerVector seg_start_vec(seg_count);
+  Rcpp::IntegerVector seg_end_vec(seg_count);
+  for(int seg_i=0; seg_i < seg_count; seg_i++){
+    int mean_index = seg_count-1-seg_i;
+    seg_mean_vec[seg_i] = rev_mean_vec[mean_index];
+    if(mean_index==0){
+      seg_end_vec[seg_i] = data_count;
+    }else{
+      seg_end_vec[seg_i] = rev_end_vec[mean_index-1]+1;
+    }
+    if(seg_i==0){
+      seg_start_vec[seg_i] = 1;
+    }else{
+      seg_start_vec[seg_i] = rev_end_vec[mean_index]+2;
     }
   }
-  
-  R_CMethodDef cMethods[] = {
-    {"FLOPART_interface",
-     (DL_FUNC) &FLOPART_interface, 12
-      //,{INTSXP, REALSXP, REALSXP, INTSXP}
-    },
-    {NULL, NULL, 0} 
-  };
-  
-  extern "C" {
-    void R_init_FLOPART(DllInfo *info) {
-      R_registerRoutines(info, cMethods, NULL, NULL, NULL);
-      //R_useDynamicSymbols call says the DLL is not to be searched for
-      //entry points specified by character strings so .C etc calls will
-      //only find registered symbols.
-      R_useDynamicSymbols(info, FALSE);
-    }
-    
-  }
-  
+  return Rcpp::List::create
+    (Rcpp::Named("cost_mat", cost_mat),
+     Rcpp::Named("intervals_mat", intervals_mat),
+     Rcpp::Named("segments_df", Rcpp::DataFrame::create
+		 (Rcpp::Named("mean", seg_mean_vec),
+		  Rcpp::Named("start", seg_start_vec),
+		  Rcpp::Named("end", seg_end_vec)))
+
+     );
+}

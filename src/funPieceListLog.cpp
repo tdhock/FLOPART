@@ -1,5 +1,3 @@
-/* -*- compile-command: "R CMD INSTALL .." -*- */
-
 #include "funPieceListLog.h"
 #include <list>
 #include <math.h>
@@ -11,6 +9,81 @@
 #define PREV_NOT_SET (-3)
 
 #define ABS(x) ((x)<0 ? -(x) : (x))
+
+CostMatrix::CostMatrix(int N){
+  data_count = N;
+  cost_vec.resize(data_count * 2);
+}
+
+void CostMatrix::decode_optimal_mean_end(double *mean_vec, int *end_vec){
+  // First write all mean/end entries values which indicate unused.
+  for(int i=0; i<data_count; i++){
+    mean_vec[i] = INFINITY;
+    end_vec[i] = -2;
+  }
+  MinimizeResult min = minimize();//writes all members.
+  min.write_mean_end(mean_vec, end_vec, 0);
+  int out_i=1;
+  PiecewisePoissonLossLog *up_or_down_cost;
+  while(0 <= min.prev_seg_end){
+    up_or_down_cost = &cost_vec[min.prev_seg_offset + min.prev_seg_end];
+    if(min.prev_log_mean != INFINITY){
+      //equality constraint inactive, so use new previous mean value
+      //for search (otherwise, log_mean does not change, so it is used
+      //again for lookup).
+      min.log_mean = min.prev_log_mean;
+    }
+    //search on log_mean, write prev_seg_end and prev_log_mean.
+    up_or_down_cost->findMean(&min);
+    min.write_mean_end(mean_vec, end_vec, out_i);
+    // change prev_seg_offset and out_i for next iteration.
+    if(min.prev_seg_offset==0){
+      //up_cost is actually up
+      min.prev_seg_offset = data_count;
+    }else{
+      //up_cost is actually down
+      min.prev_seg_offset = 0;
+    }
+    out_i++;
+  }
+}  
+
+void CostMatrix::copy_min_cost_intervals(double *cost_mat, int *intervals_mat){
+  PiecewisePoissonLossLog *up_or_down_cost;
+  MinimizeResult minResult;
+  for(int i=0; i<2*data_count; i++){
+    up_or_down_cost = &cost_vec[i];
+    intervals_mat[i] = up_or_down_cost->piece_list.size();
+    up_or_down_cost->Minimize(&minResult);
+    cost_mat[i] = minResult.cost;
+  }
+}  
+
+MinimizeResult CostMatrix::minimize(){
+  MinimizeResult bestMinResult, minResult;
+  bestMinResult.cost = INFINITY;
+  int up_or_down_offset;
+  for(int up_or_down = 0; up_or_down < 2; up_or_down++){
+    if(up_or_down == 0){
+      up_or_down_offset = 0;
+      minResult.prev_seg_offset = data_count;
+    }else{
+      up_or_down_offset = data_count;
+      minResult.prev_seg_offset = 0;
+    }
+    int last_cost_index = up_or_down_offset + data_count - 1;
+    cost_vec[last_cost_index].Minimize(&minResult);
+    if(minResult.cost < bestMinResult.cost){
+      bestMinResult = minResult;
+    }
+  }
+  return bestMinResult;
+}
+
+void MinimizeResult::write_mean_end(double *mean_vec, int *end_vec, int offset){
+  mean_vec[offset] = exp(log_mean);
+  end_vec[offset] = prev_seg_end;
+}
 
 PoissonLossPieceLog::PoissonLossPieceLog
   (double li, double lo, double co, double m, double M, int i, double prev){
@@ -272,7 +345,7 @@ void PiecewisePoissonLossLog::set_to_min_less_of
   PoissonLossPieceListLog::iterator next_it;
   double prev_min_cost = INFINITY;
   double prev_min_log_mean = it->min_log_mean;
-  double prev_best_log_mean;
+  double prev_best_log_mean = -INFINITY;
   while(it != input->piece_list.end()){
     double left_cost = it->getCost(it->min_log_mean);
     double right_cost = it->getCost(it->max_log_mean);
@@ -483,7 +556,7 @@ void PiecewisePoissonLossLog::set_to_min_more_of
   it--;
   double prev_min_cost = INFINITY;
   double prev_max_log_mean = it->max_log_mean;
-  double prev_best_log_mean;
+  double prev_best_log_mean = -INFINITY;
   it++;
   if(verbose)print();
   while(it != input->piece_list.begin()){
@@ -647,6 +720,17 @@ void PiecewisePoissonLossLog::set_prev_seg_end(int prev_seg_end){
   }
 }
 
+double PiecewisePoissonLossLog::findCost(double mean){
+  PoissonLossPieceListLog::iterator it;
+  for(it=piece_list.begin(); it != piece_list.end(); it++){
+    if(it->min_log_mean <= mean && mean <= it->max_log_mean){
+      //int verbose = 0;
+      return it->getCost(mean);
+    }
+  }
+  return INFINITY;//to avoid warning: control reaches end of non-void function
+}
+
 void PiecewisePoissonLossLog::findMean
   (MinimizeResult *bestMinResult){
   PoissonLossPieceListLog::iterator it;
@@ -657,17 +741,6 @@ void PiecewisePoissonLossLog::findMean
       return;
     }
   }
-}
-
-double PiecewisePoissonLossLog::findCost(double mean){
-  PoissonLossPieceListLog::iterator it;
-  for(it=piece_list.begin(); it != piece_list.end(); it++){
-    if(it->min_log_mean <= mean && mean <= it->max_log_mean){
-      //int verbose = 0;
-      return it->getCost(mean);
-    }
-  }
-  return INFINITY;//to avoid warning: control reaches end of non-void function
 }
 
 void PiecewisePoissonLossLog::print(){
@@ -1244,18 +1317,17 @@ void PiecewisePoissonLossLog::push_piece
   }
 }
 
-void PiecewisePoissonLossLog::adjustWeights(double cum_weight_prev_i,
-                   double cum_weight_i, double *weight_vec, int data_i,
-                   int *data_vec){
+void PiecewisePoissonLossLog::adjustWeights
+(const double cum_weight_prev_i,
+ const double cum_weight_i,
+ const double *weight_vec,
+ const int data_i,
+ const int *data_vec){
   multiply(cum_weight_prev_i);
-
-    add(weight_vec[data_i],
-     -data_vec[data_i]*weight_vec[data_i],
-                                 0.0);
-
+  add(weight_vec[data_i],
+      -data_vec[data_i]*weight_vec[data_i],
+      0.0);
   multiply(1/cum_weight_i);
-
-
 }
 
 void PiecewisePoissonLossLog::addPenalty(double penalty, 

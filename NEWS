@@ -1,0 +1,8 @@
+2021.4.28
+
+Rcpp instead of .C for C++ interface.
+
+2021.4.27
+
+new C++ classes CostMatrix and MinimizeResult with helpful methods
+that make the code easier to read/understanding (especially decoding).

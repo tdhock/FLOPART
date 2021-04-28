@@ -1,1 +1,3 @@
-useDynLib(FLOPART)
+useDynLib(FLOPART, .registration=TRUE)
+importFrom(Rcpp, evalCpp)
+export(FLOPART_interface)
