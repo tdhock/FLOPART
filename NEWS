@@ -2,7 +2,8 @@
 
 Rcpp instead of .C for C++ interface.
 
-export get_label_code and FLOPART_interface R functions.
+export new R functions: get_label_code, FLOPART_interface,
+FLOPART_data, FLOPART.
 
 2021.4.27
 

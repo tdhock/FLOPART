@@ -98,8 +98,8 @@ Rcpp::List FLOPART_interface
      Rcpp::Named("intervals_mat", intervals_mat),
      Rcpp::Named("segments_df", Rcpp::DataFrame::create
 		 (Rcpp::Named("mean", seg_mean_vec),
-		  Rcpp::Named("start", seg_start_vec),
-		  Rcpp::Named("end", seg_end_vec)))
+		  Rcpp::Named("firstRow", seg_start_vec),
+		  Rcpp::Named("lastRow", seg_end_vec)))
 
      );
 }

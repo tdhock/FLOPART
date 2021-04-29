@@ -12,4 +12,4 @@ RoxygenNote: 7.1.1
 Suggests: testthat
 Depends: R (>= 2.10)
 LinkingTo: Rcpp
-Imports: Rcpp
+Imports: Rcpp, data.table

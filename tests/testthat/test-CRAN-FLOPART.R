@@ -14,8 +14,8 @@ label_count <- length(label_starts)
 PoissonLoss <- function(meanVal, dataVal){
   meanVal - dataVal * log(meanVal)
 }
-seg <- function(mean, start, end){
-  data.frame(mean, start, end)
+seg <- function(mean, firstRow, lastRow){
+  data.frame(mean, firstRow, lastRow)
 }
 
 label_types <- 0L
