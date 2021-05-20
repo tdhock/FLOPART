@@ -1,3 +1,4 @@
+inst/testfiles
 build.sh
 .dir-locals.el
 ^.*\.Rproj$

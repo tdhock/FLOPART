@@ -1,3 +1,7 @@
+TODOs
+
+Include compression in FLOPART_data.
+
 2021.4.28
 
 Rcpp instead of .C for C++ interface.

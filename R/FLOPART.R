@@ -65,7 +65,7 @@ FLOPART_data <- function(coverage, label){
     annotation, type,
     firstRow, lastRow
   )]
-  list(coverage.dt=with.counts, label.dt=label.index.dt)
+  list(coverage_dt=with.counts, label_dt=label.index.dt)
 }
 
 ##' Main function for computing optimal segmentation model with
@@ -79,21 +79,21 @@ FLOPART_data <- function(coverage, label){
 ##' @author Toby Dylan Hocking
 ##' @example inst/examples/FLOPART.R
 FLOPART <- function(coverage, label, penalty){
-  status <- NULL
+  status <- state <- NULL
   data.list <- FLOPART_data(coverage, label)
   result <- with(data.list, FLOPART_interface(
-    coverage.dt[["count"]],
-    coverage.dt[["weight"]],
+    coverage_dt[["count"]],
+    coverage_dt[["weight"]],
     penalty,
-    label.dt[["type"]],
-    label.dt[["firstRow"]]-1,
-    label.dt[["lastRow"]]-1))
+    label_dt[["type"]],
+    label_dt[["firstRow"]]-1,
+    label_dt[["lastRow"]]-1))
   segs <- as.data.table(result[["segments_df"]])
   name.vec <- c(firstRow="chromStart", lastRow="chromEnd")
   for(xRow in names(name.vec)){
     chromX <- name.vec[[xRow]]
     row.vec <- segs[[xRow]]
-    pos.vec <- data.list[["coverage.dt"]][[chromX]]
+    pos.vec <- data.list[["coverage_dt"]][[chromX]]
     set(segs, j=chromX, value=pos.vec[row.vec])
   }
   segs[, status := ifelse(state==0, "background", "peak")]
