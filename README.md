@@ -1,5 +1,7 @@
 # FLOPART 
-Functional Labeled Optimal Partitioning - A peak detection algorithm that allows for three types of labels.
+
+Functional Labeled Optimal Partitioning - A peak detection algorithm
+that allows for three types of labels.
 
 # Installation
 
@@ -7,7 +9,7 @@ Functional Labeled Optimal Partitioning - A peak detection algorithm that allows
 install.packages("FLOPART")
 ##OR
 if(require("remotes"))install.packages("remotes")
-remotes::install_github("alyssajs/FLOPART)
+remotes::install_github("tdhock/FLOPART")
 ```
 
 # Usage

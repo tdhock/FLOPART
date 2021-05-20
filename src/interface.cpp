@@ -47,11 +47,13 @@ Rcpp::List FLOPART_interface
   Rcpp::IntegerMatrix intervals_mat(data_count, 2);
   Rcpp::IntegerVector rev_end_vec(data_count);
   Rcpp::NumericVector rev_mean_vec(data_count);
+  Rcpp::IntegerVector rev_state_vec(data_count);
   int status = FLOPART
     (&data_vec[0], &weight_vec[0],
      data_count, penalty,
      &label_type_vec[0], &label_start_vec[0], &label_end_vec[0], label_count,
-     &cost_mat[0], &rev_end_vec[0], &rev_mean_vec[0], &intervals_mat[0]
+     &cost_mat[0], &rev_end_vec[0], &rev_mean_vec[0], &intervals_mat[0],
+     &rev_state_vec[0]
      );
   if(status == ERROR_MIN_MAX_SAME){
     Rcpp::stop("data[i]=%d for all i", data_vec[0]);
@@ -79,9 +81,11 @@ Rcpp::List FLOPART_interface
   Rcpp::NumericVector seg_mean_vec(seg_count);
   Rcpp::IntegerVector seg_start_vec(seg_count);
   Rcpp::IntegerVector seg_end_vec(seg_count);
+  Rcpp::IntegerVector seg_state_vec(seg_count);
   for(int seg_i=0; seg_i < seg_count; seg_i++){
     int mean_index = seg_count-1-seg_i;
     seg_mean_vec[seg_i] = rev_mean_vec[mean_index];
+    seg_state_vec[seg_i] = rev_state_vec[mean_index];
     if(mean_index==0){
       seg_end_vec[seg_i] = data_count;
     }else{
@@ -99,7 +103,9 @@ Rcpp::List FLOPART_interface
      Rcpp::Named("segments_df", Rcpp::DataFrame::create
 		 (Rcpp::Named("mean", seg_mean_vec),
 		  Rcpp::Named("firstRow", seg_start_vec),
-		  Rcpp::Named("lastRow", seg_end_vec)))
-
+		  Rcpp::Named("lastRow", seg_end_vec),
+		  Rcpp::Named("state", seg_state_vec)
+		  )
+		 )
      );
 }

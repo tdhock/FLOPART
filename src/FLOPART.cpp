@@ -20,7 +20,8 @@ int FLOPART
    double *cost_mat, //data_count x 2.
    int *end_vec,//data_count
    double *mean_vec,//data_count
-   int *intervals_mat//data_count x 2
+   int *intervals_mat,//data_count x 2
+   int *state_vec
    ){
   for(int label_i=0; label_i < label_count; label_i++){
     if(label_starts[label_i] < 0){
@@ -150,7 +151,7 @@ int FLOPART
   // Then store number of intervals and optimal cost value, for each
   // cost function.
   cost_funs.copy_min_cost_intervals(cost_mat, intervals_mat);
-  cost_funs.decode_optimal_mean_end(mean_vec, end_vec);
+  cost_funs.decode_optimal_mean_end_state(mean_vec, end_vec, state_vec);
   return 0;
 }
 

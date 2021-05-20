@@ -15,14 +15,15 @@ CostMatrix::CostMatrix(int N){
   cost_vec.resize(data_count * 2);
 }
 
-void CostMatrix::decode_optimal_mean_end(double *mean_vec, int *end_vec){
+void CostMatrix::decode_optimal_mean_end_state(double *mean_vec, int *end_vec, int *state_vec){
   // First write all mean/end entries values which indicate unused.
   for(int i=0; i<data_count; i++){
     mean_vec[i] = INFINITY;
     end_vec[i] = -2;
+    state_vec[i] = -2;
   }
   MinimizeResult min = minimize();//writes all members.
-  min.write_mean_end(mean_vec, end_vec, 0);
+  min.write_mean_end_state(mean_vec, end_vec, state_vec, 0);
   int out_i=1;
   PiecewisePoissonLossLog *up_or_down_cost;
   while(0 <= min.prev_seg_end){
@@ -35,15 +36,13 @@ void CostMatrix::decode_optimal_mean_end(double *mean_vec, int *end_vec){
     }
     //search on log_mean, write prev_seg_end and prev_log_mean.
     up_or_down_cost->findMean(&min);
-    min.write_mean_end(mean_vec, end_vec, out_i);
     // change prev_seg_offset and out_i for next iteration.
     if(min.prev_seg_offset==0){
-      //up_cost is actually up
-      min.prev_seg_offset = data_count;
+      min.prev_seg_offset = data_count; 
     }else{
-      //up_cost is actually down
       min.prev_seg_offset = 0;
     }
+    min.write_mean_end_state(mean_vec, end_vec, state_vec, out_i);
     out_i++;
   }
 }  
@@ -80,9 +79,10 @@ MinimizeResult CostMatrix::minimize(){
   return bestMinResult;
 }
 
-void MinimizeResult::write_mean_end(double *mean_vec, int *end_vec, int offset){
+void MinimizeResult::write_mean_end_state(double *mean_vec, int *end_vec, int *state_vec, int offset){
   mean_vec[offset] = exp(log_mean);
   end_vec[offset] = prev_seg_end;
+  state_vec[offset] = prev_seg_offset;
 }
 
 PoissonLossPieceLog::PoissonLossPieceLog

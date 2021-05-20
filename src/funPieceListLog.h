@@ -14,7 +14,7 @@ public:
   double prev_log_mean;
   int prev_seg_end;
   int prev_seg_offset;
-  void write_mean_end(double *mean_vec, int *end_vec, int offset);
+  void write_mean_end_state(double *mean_vec, int *end_vec, int *state_vec, int offset);
 };
 
 class PoissonLossPieceLog {
@@ -79,6 +79,6 @@ class CostMatrix {
   MinimizeResult minimize();
   CostMatrix(int);
   void copy_min_cost_intervals(double*, int*);
-  void decode_optimal_mean_end(double*, int*);
+  void decode_optimal_mean_end_state(double*, int*, int*);
 };
 

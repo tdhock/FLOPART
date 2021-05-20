@@ -14,8 +14,8 @@ label_count <- length(label_starts)
 PoissonLoss <- function(meanVal, dataVal){
   meanVal - dataVal * log(meanVal)
 }
-seg <- function(mean, firstRow, lastRow){
-  data.frame(mean, firstRow, lastRow)
+seg <- function(mean, firstRow, lastRow, state){
+  data.frame(mean, firstRow, lastRow, state)
 }
 
 label_types <- 0L
@@ -25,8 +25,8 @@ result <- FLOPART::FLOPART_interface(
 costMatrix <- t(result[["cost_mat"]])
 test_that("correct for noPeaks label",{
   expected.segs <- rbind(
-    seg(2.5, 1, 4),
-    seg(5.0, 5, 5))
+    seg(2.5, 1, 4, 0),
+    seg(5.0, 5, 5, 5))
   expect_equal(result[["segments_df"]], expected.segs)
   last.up.cost <- mean(PoissonLoss(c(rep(2.5, 4), 5), data_vec))
   first.up.cost <- PoissonLoss(1, 1)
@@ -71,4 +71,40 @@ test_that("error for overlapping labels", {
       data_vec, weight_vec, penalty,
       type, start, end))
   }, "label start should be greater than previous label end")
+})
+
+test_that("error for label start before coverage", {
+  cov.df <- data.frame(chromStart=10, chromEnd=20, count=4)
+  lab.df <- data.frame(chromStart=5, chromEnd=15, annotation="noPeaks")
+  expect_error({
+    FLOPART::FLOPART_data(cov.df, lab.df)
+  }, "label starts must be on or after first coverage")
+})
+
+test_that("error for label end after coverage", {
+  cov.df <- data.frame(chromStart=10, chromEnd=20, count=4)
+  lab.df <- data.frame(chromStart=15, chromEnd=25, annotation="noPeaks")
+  expect_error({
+    FLOPART::FLOPART_data(cov.df, lab.df)
+  }, "label ends must be on or before last coverage")
+})
+
+test_that("can start up", {
+  seg.mean.vec <- c(11, 3)
+  set.seed(1)
+  count <- unlist(lapply(seg.mean.vec, function(m)rpois(10, m)))
+  N <- length(count)
+  cov.df <- data.frame(
+    chromStart=seq(0, N-1),
+    chromEnd=seq(1, N),
+    count)
+  result.list <- FLOPART::FLOPART(cov.df, penalty=5)
+  segs <- result.list[["segments_dt"]]
+  expect_identical(segs[["status"]], c("peak", "background"))
+})
+
+test_that("error for non-df coverage", {
+  expect_error({
+    FLOPART::FLOPART(c(3, 4), penalty=5)
+  }, "coverage must be a data frame")
 })

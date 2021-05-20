@@ -16,8 +16,17 @@ FLOPART_data <- function(coverage, label){
     annotation <- labelStart <- labelEnd <- type <- firstRow <-
       lastRow <- . <- NULL
   if(missing(label)){
-    label <- data.frame(
+    label <- data.table(
       chromStart=integer(), chromEnd=integer(), annotation=character())
+  }
+  if(!is.data.frame(coverage)){
+    stop("coverage must be a data frame")
+  }
+  if(any(max(coverage[["chromEnd"]]) < label[["chromEnd"]])){
+    stop("label ends must be on or before last coverage")
+  }
+  if(any(label[["chromStart"]] < min(coverage[["chromStart"]]))){
+    stop("label starts must be on or after first coverage")
   }
   label_code <- get_label_code()
   df.names <- list("label", "coverage")
@@ -87,7 +96,7 @@ FLOPART <- function(coverage, label, penalty){
     pos.vec <- data.list[["coverage.dt"]][[chromX]]
     set(segs, j=chromX, value=pos.vec[row.vec])
   }
-  segs[, status := rep(c("background", "peak"), l=.N)]
+  segs[, status := ifelse(state==0, "background", "peak")]
   result[["segments_df"]] <- NULL
   result[["segments_dt"]] <- segs
   c(data.list, result)
