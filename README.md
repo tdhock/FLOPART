@@ -157,7 +157,7 @@ Other outputs which could be of interest:
   to the start/end positions of the labels, in units of the rows in
   `coverage_dt`.
 
-** Related work
+# Related work
 
 * [PeakSegOptimal](https://github.com/tdhock/PeakSegOptimal) and
   [PeakSegDisk](https://github.com/tdhock/PeakSegDisk) implement
