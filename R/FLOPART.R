@@ -6,7 +6,7 @@ label_colors <- c(
 ##' FLOPART needs at most one label per coverage data row, which may
 ##' not be the case for arbitrary coverage/labels.
 ##' @title Convert data for input to FLOPART
-##' @param coverage data frame of coverage with columns chromStart, chromEnd, count 
+##' @param coverage data frame of coverage with columns chromStart, chromEnd, count
 ##' @param label data.frame of labels with with columns chromStart, chromEnd, annotation
 ##' @return named list: coverage and label
 ##' @author Toby Dylan Hocking
@@ -49,7 +49,6 @@ FLOPART_data <- function(coverage, label){
     .(chromStart=i.chromStart, chromEnd=i.chromEnd, count,
       weight = i.chromEnd - i.chromStart),
     on=.(chromStart < chromEnd, chromEnd > chromStart)]
-  label_code <- FLOPART::get_label_code()
   label.index.dt <- with.counts[
     dt.list[["label"]],
     .(firstRow=.I[1],
