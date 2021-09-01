@@ -167,3 +167,4 @@ Other outputs which could be of interest:
 * [LOPART](https://github.com/tdhock/LOPART) implements a solver for
   the normal model with 0/1 label constraints, but no inequality
   constraints (each change can be in any direction, up or down).
+* [Repo with figures from related paper in progress](https://github.com/tdhock/LabeledFPOP-paper).
