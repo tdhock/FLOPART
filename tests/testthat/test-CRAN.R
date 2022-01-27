@@ -103,6 +103,25 @@ test_that("can start up", {
   expect_identical(segs[["status"]], c("peak", "background"))
 })
 
+test_that("factor annotation ok", {
+  seg.mean.vec <- c(11, 3)
+  set.seed(1)
+  count <- unlist(lapply(seg.mean.vec, function(m)rpois(10, m)))
+  N <- length(count)
+  cov.df <- data.frame(
+    chromStart=seq(0, N-1),
+    chromEnd=seq(1, N),
+    count)
+  label.df <- data.frame(
+    chromStart=12,
+    chromEnd=18,
+    annotation=factor(
+      "noPeaks", levels=c("peaks", "peakStart", "peakEnd", "noPeaks")))
+  result.list <- FLOPART::FLOPART(cov.df, label.df, penalty=5)
+  segs <- result.list[["segments_dt"]]
+  expect_identical(segs[["status"]], c("peak", "background"))
+})
+
 test_that("error for non-df coverage", {
   expect_error({
     FLOPART::FLOPART(c(3, 4), penalty=5)
