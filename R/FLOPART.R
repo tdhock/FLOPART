@@ -55,7 +55,8 @@ FLOPART_data <- function(coverage, label){
       lastRow=.I[.N],
       labelStart=i.chromStart,
       labelEnd=i.chromEnd,
-      type=label_code[annotation], annotation),
+      type=label_code[paste(annotation)],
+      annotation),
     by=.EACHI,
     on=.(chromEnd > chromStart, chromStart < chromEnd)
   ][, .(

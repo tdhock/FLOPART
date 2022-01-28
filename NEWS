@@ -2,6 +2,11 @@ TODOs
 
 Include compression in FLOPART_data.
 
+2022.1.27
+
+FLOPART now works if annotation column of label data table is a factor
+(previously only worked if it was character).
+
 2021.4.28
 
 Rcpp instead of .C for C++ interface.
