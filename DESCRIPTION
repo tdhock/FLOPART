@@ -2,8 +2,8 @@ Package: FLOPART
 Type: Package
 Title: Functional Labeled Optimal Partitioning
 Version: 2022.1.27
-Author: Toby Hocking, Alyssa Stenberg
-Maintainer: Alyssa Stenberg <ajs937@nau.edu>
+Author: Toby Dylan Hocking, Alyssa Stenberg
+Maintainer: Toby Dylan Hocking <toby.hocking@r-project.org>
 Description: Provides an efficient C++ code for computing an
  optimal segmentation model with Poisson loss,
  up-down constraints, and label constraints.
