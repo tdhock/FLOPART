@@ -1,10 +1,12 @@
-# FLOPART 
+# FLOPART: Functional Labeled Optimal Partitioning
 
-Functional Labeled Optimal Partitioning: an optimal peak detection
-algorithm with label constraints. The dynamic programming algorithm
-computes a segmentation and corresponding set of peaks which minimizes
-the penalized Poisson loss (for non-negative integer count data),
-subject to the following constraints:
+[https://github.com/tdhock/FLOPART/workflows/R-CMD-check/badge.svg](https://github.com/tdhock/FLOPART/actions)
+
+Functional Labeled Optimal Partitioning (FLOPART) is an optimal peak
+detection algorithm with label constraints. The dynamic programming
+algorithm computes a segmentation and corresponding set of peaks which
+minimizes the penalized Poisson loss (for non-negative integer count
+data), subject to the following constraints:
 
 * SAME as previous PeakSeg packages: there are two states (up/peak and
   down/background). Changes from up/peak state must be non-increasing
