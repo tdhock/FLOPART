@@ -36,6 +36,9 @@ Rcpp::List FLOPART_interface
   if(data_count != weight_vec.size()){
     Rcpp::stop("data_vec and weight_vec should be same size");
   }
+  if(Rcpp::any(!Rcpp::is_finite(data_vec))){
+    Rcpp::stop("data must be finite");
+  }
   int label_count = label_type_vec.size();
   if(label_count != label_start_vec.size()){
     Rcpp::stop("label_start_vec and label_type_vec should be same size");

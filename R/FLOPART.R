@@ -81,6 +81,7 @@ FLOPART_data <- function(coverage, label){
 FLOPART <- function(coverage, label, penalty){
   status <- state <- NULL
   data.list <- FLOPART_data(coverage, label)
+  ##print(data.list)
   result <- with(data.list, FLOPART_interface(
     coverage_dt[["count"]],
     coverage_dt[["weight"]],

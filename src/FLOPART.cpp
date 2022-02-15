@@ -42,6 +42,7 @@ int FLOPART
     case LABEL_PEAKEND:
       break;
     default:
+      Rprintf("label[%d]=%d\n", label_i, label_types[label_i]);
       return ERROR_UNRECOGNIZED_LABEL_TYPE;
     }
   }
