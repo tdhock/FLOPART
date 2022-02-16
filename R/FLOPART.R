@@ -49,6 +49,9 @@ FLOPART_data <- function(coverage, label){
     .(chromStart=i.chromStart, chromEnd=i.chromEnd, count,
       weight = i.chromEnd - i.chromStart),
     on=.(chromStart < chromEnd, chromEnd > chromStart)]
+  if(any(is.na(with.counts$count))){
+    stop("count data missing, meaning that some chromStart are not equal to previous chromEnd, please fix by adding rows with count=0")
+  }
   label.index.dt <- with.counts[
     dt.list[["label"]],
     .(firstRow=.I[1],

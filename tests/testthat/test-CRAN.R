@@ -17,8 +17,17 @@ PoissonLoss <- function(meanVal, dataVal){
 seg <- function(mean, firstRow, lastRow, state){
   data.frame(mean, firstRow, lastRow, state)
 }
-
 label_types <- 0L
+
+test_that("error for non-finite coverage", {
+  na_vec <- rep(NA, length(weight_vec))
+  expect_error({
+    FLOPART::FLOPART_interface(
+      na_vec, weight_vec, penalty,
+      label_types, label_starts, label_ends)
+  }, "data must be finite")
+})
+
 result <- FLOPART::FLOPART_interface(
   data_vec, weight_vec, penalty,
   label_types, label_starts, label_ends)
@@ -126,4 +135,37 @@ test_that("error for non-df coverage", {
   expect_error({
     FLOPART::FLOPART(c(3, 4), penalty=5)
   }, "coverage must be a data frame")
+})
+
+library(data.table)
+chromEnd <- seq(10, 30, by=10)
+counts <- data.table(
+  chromStart=chromEnd-10L,
+  chromEnd,
+  count=chromEnd)
+chromEnd <- seq(13, 23, by=10)
+labels <- data.table(
+  chromStart=chromEnd-6L,
+  chromEnd,
+  annotation="peakStart")
+test_that("chromStart/count correct from FLOPART_data", {
+  data.list <- FLOPART::FLOPART_data(counts,labels)
+  expect_equal(data.list$coverage_dt$chromStart, c(0,7,10,13,17,20,23))
+  expect_equal(data.list$coverage_dt$count, c(10,10,20,20,20,30,30))
+})
+
+chromEnd <- seq(10, 30, by=10)
+counts <- data.table(
+  chromStart=chromEnd-9L,
+  chromEnd,
+  count=chromEnd)
+chromEnd <- seq(13, 23, by=10)
+labels <- data.table(
+  chromStart=chromEnd-6L,
+  chromEnd,
+  annotation="peakStart")
+test_that("error if counts missing from FLOPART_data", {
+  expect_error({
+    FLOPART::FLOPART_data(counts,labels)
+  }, "count data missing, meaning that some chromStart are not equal to previous chromEnd, please fix by adding rows with count=0")
 })
