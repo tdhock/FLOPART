@@ -14,7 +14,7 @@ label_colors <- c(
 FLOPART_data <- function(coverage, label){
   i.chromStart <- i.chromEnd <- count <- chromStart <- chromEnd <-
     annotation <- labelStart <- labelEnd <- type <- firstRow <-
-      lastRow <- . <- NULL
+      lastRow <- . <- run.i <- NULL
   if(missing(label)){
     label <- data.table(
       chromStart=integer(), chromEnd=integer(), annotation=character())
