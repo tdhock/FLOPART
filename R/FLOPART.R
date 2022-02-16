@@ -14,7 +14,7 @@ label_colors <- c(
 FLOPART_data <- function(coverage, label){
   i.chromStart <- i.chromEnd <- count <- chromStart <- chromEnd <-
     annotation <- labelStart <- labelEnd <- type <- firstRow <-
-      lastRow <- . <- NULL
+      lastRow <- . <- run.i <- NULL
   if(missing(label)){
     label <- data.table(
       chromStart=integer(), chromEnd=integer(), annotation=character())
@@ -29,7 +29,18 @@ FLOPART_data <- function(coverage, label){
     stop("label starts must be on or after first coverage")
   }
   label_code <- get_label_code()
-  df.names <- list("label", "coverage")
+  cov_dt <- data.table(coverage)
+  cov_dt[, run.i := cumsum(c(1, diff(count)!=0))]
+  stop_count_data_missing <- function(){
+    stop("count data missing, meaning that some chromStart are not equal to previous chromEnd, please fix by adding rows with count=0")
+  }
+  compressed <- cov_dt[, {
+    if(any(chromStart[-1] != chromEnd[-.N])){
+      stop_count_data_missing()
+    }
+    .(chromStart=chromStart[1], chromEnd=chromEnd[.N])
+  }, by=.(run.i, count)]
+  df.names <- list("label", "compressed")
   key.vec <- c("chromStart", "chromEnd")
   uniq.pos.list <- list()
   dt.list <- list()
@@ -44,11 +55,14 @@ FLOPART_data <- function(coverage, label){
   uniq.dt <- data.table(
     chromStart=uniq.pos[-length(uniq.pos)],
     chromEnd=uniq.pos[-1])
-  with.counts <- dt.list[["coverage"]][
+  with.counts <- dt.list[["compressed"]][
     uniq.dt,
     .(chromStart=i.chromStart, chromEnd=i.chromEnd, count,
       weight = i.chromEnd - i.chromStart),
     on=.(chromStart < chromEnd, chromEnd > chromStart)]
+  if(any(is.na(with.counts$count))){
+    stop_count_data_missing()
+  }
   label.index.dt <- with.counts[
     dt.list[["label"]],
     .(firstRow=.I[1],
@@ -81,6 +95,7 @@ FLOPART_data <- function(coverage, label){
 FLOPART <- function(coverage, label, penalty){
   status <- state <- NULL
   data.list <- FLOPART_data(coverage, label)
+  ##print(data.list)
   result <- with(data.list, FLOPART_interface(
     coverage_dt[["count"]],
     coverage_dt[["weight"]],
