@@ -169,3 +169,22 @@ test_that("error if counts missing from FLOPART_data", {
     FLOPART::FLOPART_data(counts,labels)
   }, "count data missing, meaning that some chromStart are not equal to previous chromEnd, please fix by adding rows with count=0")
 })
+
+chromEnd <- seq(10, 30, by=10)
+counts <- data.table(
+  chromStart=chromEnd-10L,
+  chromEnd,
+  count=c(200,500,500))
+labels <- data.table(
+  chromStart=5,
+  chromEnd=15,
+  annotation="noPeaks")
+test_that("FLOPART_data compresses", {
+  data.list <- FLOPART::FLOPART_data(counts,labels)
+  expect_equal(data.list$coverage_dt, data.table(
+    chromStart=c(0,5,10,15),
+    chromEnd=c(5,10,15,30),
+    count=c(200,200,500,500),
+    weight=c(5,5,5,15),
+    key=c("chromStart", "chromEnd")))
+})
