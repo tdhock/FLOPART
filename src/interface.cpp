@@ -59,22 +59,22 @@ Rcpp::List FLOPART_interface
      &rev_state_vec[0]
      );
   if(status == ERROR_MIN_MAX_SAME){
-    Rcpp::stop("data[i]=%d for all i", data_vec[0]);
+    Rcpp::stop("data[i]=%d for all i, fix by using a data sequence with more than one value", data_vec[0]);
   }
-  if(status == ERROR_LABEL_END_MUST_BE_AT_LEAST_LABEL_START){
-    Rcpp::stop("label end must be at least label start");
+  if(status == ERROR_LABEL_END_MUST_BE_GREATER_THAN_LABEL_START){
+    Rcpp::stop("label end must be greater than label start, use FLOPART_data(counts, labels) to see firstRow/lastRow values passed to C++ code");
   }
   if(status == ERROR_LABEL_START_SHOULD_BE_GREATER_THAN_PREVIOUS_LABEL_END){
-    Rcpp::stop("label start should be greater than previous label end");
+    Rcpp::stop("label start should be greater than previous label end, use FLOPART_data(counts, labels) to see firstRow/lastRow columns passed to C++ code");
   }
   if(status == ERROR_UNRECOGNIZED_LABEL_TYPE){
-    Rcpp::stop("unrecognized label type");
+    Rcpp::stop("unrecognized label type, use FLOPART_data(counts, labels) to see type column passed to C++ code, and get_label_code() for a mapping between annotation/character and type/integer values");
   }
   if(status == ERROR_LABEL_END_MUST_BE_LESS_THAN_DATA_SIZE){
-    Rcpp::stop("label end must be less than data size");
+    Rcpp::stop("label end must be less than data size, use FLOPART_data(counts, labels) to see lastRow column passed to C++ code");
   }
   if(status == ERROR_LABEL_START_MUST_BE_AT_LEAST_ZERO){
-    Rcpp::stop("label start must be at least zero");
+    Rcpp::stop("label start must be at least zero, use FLOPART_data(counts, labels) to see firstRow column passed to C++ code");
   }
   Rcpp::DataFrame seg_df;
   if(status == ERROR_INFINITE_COST){

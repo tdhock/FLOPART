@@ -6,9 +6,12 @@ label_colors <- c(
 ##' FLOPART needs at most one label per coverage data row, which may
 ##' not be the case for arbitrary coverage/labels.
 ##' @title Convert data for input to FLOPART
-##' @param coverage data frame of coverage with columns chromStart, chromEnd, count
-##' @param label data.frame of labels with with columns chromStart, chromEnd, annotation
-##' @return named list: coverage and label
+##' @param coverage data frame of coverage with columns chromStart,
+##'   chromEnd, count
+##' @param label data.frame of labels with with columns chromStart,
+##'   chromEnd, annotation
+##' @return named list: coverage and label (firstRow/lastRow are
+##'   0-based indices passed to C++ code).
 ##' @author Toby Dylan Hocking
 ##' @example inst/examples/FLOPART_data.R
 FLOPART_data <- function(coverage, label){
@@ -65,8 +68,8 @@ FLOPART_data <- function(coverage, label){
   }
   label.index.dt <- with.counts[
     dt.list[["label"]],
-    .(firstRow=.I[1],
-      lastRow=.I[.N],
+    .(firstRow=.I[1]-1L,
+      lastRow=.I[.N]-1L,
       labelStart=i.chromStart,
       labelEnd=i.chromEnd,
       type=label_code[paste(annotation)],
@@ -100,8 +103,8 @@ FLOPART <- function(coverage, label, penalty){
     coverage_dt[["weight"]],
     penalty,
     label_dt[["type"]],
-    label_dt[["firstRow"]]-1,
-    label_dt[["lastRow"]]-1))
+    label_dt[["firstRow"]],
+    label_dt[["lastRow"]]))
   segs <- as.data.table(result[["segments_df"]])
   if(nrow(segs)==0)warning("there is no feasible model given label constraints; fix by modifying labels")
   name.vec <- c(firstRow="chromStart", lastRow="chromEnd")

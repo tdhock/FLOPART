@@ -201,9 +201,8 @@ labels <- data.table(
   chromStart=chromEnd-1,
   chromEnd,
   annotation)
-test_that("Inf cost at end is not an error/crash", {
-  expect_warning({
-    fit <- FLOPART::FLOPART(counts, labels, 5)
-  }, "there is no feasible model given label constraints; fix by modifying labels")
-  expect_equal(nrow(fit$segments_dt), 0)
+test_that("error for label start = end", {
+  expect_error({
+    FLOPART::FLOPART(counts, labels, 5)
+  }, "label end must be greater than label start")
 })

@@ -7,12 +7,15 @@
 FLOPART_data(coverage, label)
 }
 \arguments{
-\item{coverage}{data frame of coverage with columns chromStart, chromEnd, count}
+\item{coverage}{data frame of coverage with columns chromStart,
+chromEnd, count}
 
-\item{label}{data.frame of labels with with columns chromStart, chromEnd, annotation}
+\item{label}{data.frame of labels with with columns chromStart,
+chromEnd, annotation}
 }
 \value{
-named list: coverage and label
+named list: coverage and label (firstRow/lastRow are
+  0-based indices passed to C++ code).
 }
 \description{
 FLOPART needs at most one label per coverage data row, which may

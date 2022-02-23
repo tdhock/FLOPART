@@ -30,8 +30,8 @@ int FLOPART
     if(data_count <= label_ends[label_i]){
       return ERROR_LABEL_END_MUST_BE_LESS_THAN_DATA_SIZE;
     }
-    if(label_ends[label_i] < label_starts[label_i]){
-      return ERROR_LABEL_END_MUST_BE_AT_LEAST_LABEL_START;
+    if(label_ends[label_i] <= label_starts[label_i]){
+      return ERROR_LABEL_END_MUST_BE_GREATER_THAN_LABEL_START;
     }
     if(0 < label_i && label_starts[label_i] <= label_ends[label_i-1]){
       return ERROR_LABEL_START_SHOULD_BE_GREATER_THAN_PREVIOUS_LABEL_END;

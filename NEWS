@@ -1,5 +1,11 @@
 TODOs
 
+2022.2.23
+
+error if label start = end.
+
+Rcpp errors contain more details about FLOPART_data() etc.
+
 2022.2.22
 
 FLOPART_interface returns segments table with 0 rows if there is
