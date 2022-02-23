@@ -15,36 +15,39 @@ CostMatrix::CostMatrix(int N){
   cost_vec.resize(data_count * 2);
 }
 
-void CostMatrix::decode_optimal_mean_end_state(double *mean_vec, int *end_vec, int *state_vec){
+double CostMatrix::decode_optimal_mean_end_state(double *mean_vec, int *end_vec, int *state_vec){
   // First write all mean/end entries values which indicate unused.
   for(int i=0; i<data_count; i++){
     mean_vec[i] = INFINITY;
     end_vec[i] = -2;
     state_vec[i] = -2;
   }
-  MinimizeResult min = minimize();//writes all members.
-  min.write_mean_end_state(mean_vec, end_vec, state_vec, 0);
-  int out_i=1;
-  PiecewisePoissonLossLog *up_or_down_cost;
-  while(0 <= min.prev_seg_end){
-    up_or_down_cost = &cost_vec[min.prev_seg_offset + min.prev_seg_end];
-    if(min.prev_log_mean != INFINITY){
-      //equality constraint inactive, so use new previous mean value
-      //for search (otherwise, log_mean does not change, so it is used
-      //again for lookup).
-      min.log_mean = min.prev_log_mean;
+  MinimizeResult min = minimize();//writes all members if cost finite.
+  if(min.cost < INFINITY){
+    min.write_mean_end_state(mean_vec, end_vec, state_vec, 0);
+    int out_i=1;
+    PiecewisePoissonLossLog *up_or_down_cost;
+    while(0 <= min.prev_seg_end){
+      up_or_down_cost = &cost_vec[min.prev_seg_offset + min.prev_seg_end];
+      if(min.prev_log_mean != INFINITY){
+        //equality constraint inactive, so use new previous mean value
+        //for search (otherwise, log_mean does not change, so it is used
+        //again for lookup).
+        min.log_mean = min.prev_log_mean;
+      }
+      //search on log_mean, write prev_seg_end and prev_log_mean.
+      up_or_down_cost->findMean(&min);
+      // change prev_seg_offset and out_i for next iteration.
+      if(min.prev_seg_offset==0){
+        min.prev_seg_offset = data_count; 
+      }else{
+        min.prev_seg_offset = 0;
+      }
+      min.write_mean_end_state(mean_vec, end_vec, state_vec, out_i);
+      out_i++;
     }
-    //search on log_mean, write prev_seg_end and prev_log_mean.
-    up_or_down_cost->findMean(&min);
-    // change prev_seg_offset and out_i for next iteration.
-    if(min.prev_seg_offset==0){
-      min.prev_seg_offset = data_count; 
-    }else{
-      min.prev_seg_offset = 0;
-    }
-    min.write_mean_end_state(mean_vec, end_vec, state_vec, out_i);
-    out_i++;
   }
+  return min.cost;
 }  
 
 void CostMatrix::copy_min_cost_intervals(double *cost_mat, int *intervals_mat){

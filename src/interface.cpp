@@ -76,39 +76,44 @@ Rcpp::List FLOPART_interface
   if(status == ERROR_LABEL_START_MUST_BE_AT_LEAST_ZERO){
     Rcpp::stop("label start must be at least zero");
   }
-  //convert to segments data table.
-  int seg_count=1;
-  while(seg_count < data_count && 0 <= rev_end_vec[seg_count-1]){
-    seg_count++;
-  }
-  Rcpp::NumericVector seg_mean_vec(seg_count);
-  Rcpp::IntegerVector seg_start_vec(seg_count);
-  Rcpp::IntegerVector seg_end_vec(seg_count);
-  Rcpp::IntegerVector seg_state_vec(seg_count);
-  for(int seg_i=0; seg_i < seg_count; seg_i++){
-    int mean_index = seg_count-1-seg_i;
-    seg_mean_vec[seg_i] = rev_mean_vec[mean_index];
-    seg_state_vec[seg_i] = rev_state_vec[mean_index];
-    if(mean_index==0){
-      seg_end_vec[seg_i] = data_count;
-    }else{
-      seg_end_vec[seg_i] = rev_end_vec[mean_index-1]+1;
+  Rcpp::DataFrame seg_df;
+  if(status == ERROR_INFINITE_COST){
+    seg_df = Rcpp::DataFrame::create();
+  }else{
+    //convert to segments data table.
+    int seg_count=1;
+    while(seg_count < data_count && 0 <= rev_end_vec[seg_count-1]){
+      seg_count++;
     }
-    if(seg_i==0){
-      seg_start_vec[seg_i] = 1;
-    }else{
-      seg_start_vec[seg_i] = rev_end_vec[mean_index]+2;
+    Rcpp::NumericVector seg_mean_vec(seg_count);
+    Rcpp::IntegerVector seg_start_vec(seg_count);
+    Rcpp::IntegerVector seg_end_vec(seg_count);
+    Rcpp::IntegerVector seg_state_vec(seg_count);
+    for(int seg_i=0; seg_i < seg_count; seg_i++){
+      int mean_index = seg_count-1-seg_i;
+      seg_mean_vec[seg_i] = rev_mean_vec[mean_index];
+      seg_state_vec[seg_i] = rev_state_vec[mean_index];
+      if(mean_index==0){
+        seg_end_vec[seg_i] = data_count;
+      }else{
+        seg_end_vec[seg_i] = rev_end_vec[mean_index-1]+1;
+      }
+      if(seg_i==0){
+        seg_start_vec[seg_i] = 1;
+      }else{
+        seg_start_vec[seg_i] = rev_end_vec[mean_index]+2;
+      }
     }
+    seg_df = Rcpp::DataFrame::create
+      (Rcpp::Named("mean", seg_mean_vec),
+       Rcpp::Named("firstRow", seg_start_vec),
+       Rcpp::Named("lastRow", seg_end_vec),
+       Rcpp::Named("state", seg_state_vec)
+       );
   }
   return Rcpp::List::create
     (Rcpp::Named("cost_mat", cost_mat),
      Rcpp::Named("intervals_mat", intervals_mat),
-     Rcpp::Named("segments_df", Rcpp::DataFrame::create
-		 (Rcpp::Named("mean", seg_mean_vec),
-		  Rcpp::Named("firstRow", seg_start_vec),
-		  Rcpp::Named("lastRow", seg_end_vec),
-		  Rcpp::Named("state", seg_state_vec)
-		  )
-		 )
+     Rcpp::Named("segments_df", seg_df)
      );
 }

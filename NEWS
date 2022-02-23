@@ -1,5 +1,10 @@
 TODOs
 
+2022.2.22
+
+FLOPART_interface returns segments table with 0 rows if there is
+infinite cost (no feasible model given label constraints).
+
 2022.2.15
 
 FLOPART_data error if missing counts.

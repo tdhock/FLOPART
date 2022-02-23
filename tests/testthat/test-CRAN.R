@@ -175,11 +175,11 @@ counts <- data.table(
   chromStart=chromEnd-10L,
   chromEnd,
   count=c(200,500,500))
-labels <- data.table(
-  chromStart=5,
-  chromEnd=15,
-  annotation="noPeaks")
-test_that("FLOPART_data compresses", {
+test_that("FLOPART_data compresses at end", {
+  labels <- data.table(
+    chromStart=5,
+    chromEnd=15,
+    annotation="noPeaks")
   data.list <- FLOPART::FLOPART_data(counts,labels)
   expect_equal(data.list$coverage_dt, data.table(
     chromStart=c(0,5,10,15),
@@ -187,4 +187,23 @@ test_that("FLOPART_data compresses", {
     count=c(200,200,500,500),
     weight=c(5,5,5,15),
     key=c("chromStart", "chromEnd")))
+})
+
+count <- c(0,0,1)
+chromEnd <- seq_along(count)
+counts <- data.table(
+  chromStart=chromEnd-1,
+  chromEnd,
+  count)
+annotation <- c("peakStart","peakEnd")
+chromEnd <- seq_along(annotation)
+labels <- data.table(
+  chromStart=chromEnd-1,
+  chromEnd,
+  annotation)
+test_that("Inf cost at end is not an error/crash", {
+  expect_warning({
+    fit <- FLOPART::FLOPART(counts, labels, 5)
+  }, "there is no feasible model given label constraints; fix by modifying labels")
+  expect_equal(nrow(fit$segments_dt), 0)
 })

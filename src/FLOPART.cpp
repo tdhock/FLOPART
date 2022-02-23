@@ -152,7 +152,9 @@ int FLOPART
   // Then store number of intervals and optimal cost value, for each
   // cost function.
   cost_funs.copy_min_cost_intervals(cost_mat, intervals_mat);
-  cost_funs.decode_optimal_mean_end_state(mean_vec, end_vec, state_vec);
+  double cost = cost_funs.decode_optimal_mean_end_state
+    (mean_vec, end_vec, state_vec);
+  if(cost == INFINITY)return ERROR_INFINITE_COST;
   return 0;
 }
 

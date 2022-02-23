@@ -95,7 +95,6 @@ FLOPART_data <- function(coverage, label){
 FLOPART <- function(coverage, label, penalty){
   status <- state <- NULL
   data.list <- FLOPART_data(coverage, label)
-  ##print(data.list)
   result <- with(data.list, FLOPART_interface(
     coverage_dt[["count"]],
     coverage_dt[["weight"]],
@@ -104,6 +103,7 @@ FLOPART <- function(coverage, label, penalty){
     label_dt[["firstRow"]]-1,
     label_dt[["lastRow"]]-1))
   segs <- as.data.table(result[["segments_df"]])
+  if(nrow(segs)==0)warning("there is no feasible model given label constraints; fix by modifying labels")
   name.vec <- c(firstRow="chromStart", lastRow="chromEnd")
   for(xRow in names(name.vec)){
     chromX <- name.vec[[xRow]]

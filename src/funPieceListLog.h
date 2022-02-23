@@ -79,6 +79,6 @@ class CostMatrix {
   MinimizeResult minimize();
   CostMatrix(int);
   void copy_min_cost_intervals(double*, int*);
-  void decode_optimal_mean_end_state(double*, int*, int*);
+  double decode_optimal_mean_end_state(double*, int*, int*);
 };
 
