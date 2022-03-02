@@ -62,7 +62,7 @@ Rcpp::List FLOPART_interface
     Rcpp::stop("data[i]=%d for all i, fix by using a data sequence with more than one value", data_vec[0]);
   }
   if(status == ERROR_LABEL_END_MUST_BE_GREATER_THAN_LABEL_START){
-    Rcpp::stop("label end must be greater than label start, use FLOPART_data(counts, labels) to see firstRow/lastRow values passed to C++ code");
+    Rcpp::stop("label end must be greater than label start, use FLOPART_data(counts, labels) to see firstRow/lastRow values passed to C++ code, and fix by removing labels with firstRow==lastRow");
   }
   if(status == ERROR_LABEL_START_SHOULD_BE_GREATER_THAN_PREVIOUS_LABEL_END){
     Rcpp::stop("label start should be greater than previous label end, use FLOPART_data(counts, labels) to see firstRow/lastRow columns passed to C++ code");
