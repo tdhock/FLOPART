@@ -175,7 +175,7 @@ counts <- data.table(
   chromStart=chromEnd-10L,
   chromEnd,
   count=c(200,500,500))
-test_that("FLOPART_data compresses at end", {
+test_that("FLOPART_data compresses at end, label rows correct", {
   labels <- data.table(
     chromStart=5,
     chromEnd=15,
@@ -187,6 +187,7 @@ test_that("FLOPART_data compresses at end", {
     count=c(200,200,500,500),
     weight=c(5,5,5,15),
     key=c("chromStart", "chromEnd")))
+  expect_equal(data.list$label_dt$firstRow, 1)
 })
 
 count <- c(0,0,1)

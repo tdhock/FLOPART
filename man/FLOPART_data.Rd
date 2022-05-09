@@ -10,12 +10,16 @@ FLOPART_data(coverage, label)
 \item{coverage}{data frame of coverage with columns chromStart,
 chromEnd, count}
 
-\item{label}{data.frame of labels with with columns chromStart,
+\item{label}{data frame of labels with with columns chromStart,
 chromEnd, annotation}
 }
 \value{
-named list: coverage and label (firstRow/lastRow are
-  0-based indices passed to C++ code).
+named list: coverage_dt is data table representing a
+  run-length encoding of the input coverage data, with additional
+  rows if there are label chromStart/chromEnd values not in the
+  set of coverage positions; label_dt is a data table with one row
+  per label, and additional columns firstRow/lastRow which refer
+  to row numbers of coverage_dt, 0-based for passing to C++ code.
 }
 \description{
 FLOPART needs at most one label per coverage data row, which may

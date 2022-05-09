@@ -8,10 +8,14 @@ label_colors <- c(
 ##' @title Convert data for input to FLOPART
 ##' @param coverage data frame of coverage with columns chromStart,
 ##'   chromEnd, count
-##' @param label data.frame of labels with with columns chromStart,
+##' @param label data frame of labels with with columns chromStart,
 ##'   chromEnd, annotation
-##' @return named list: coverage and label (firstRow/lastRow are
-##'   0-based indices passed to C++ code).
+##' @return named list: coverage_dt is data table representing a
+##'   run-length encoding of the input coverage data, with additional
+##'   rows if there are label chromStart/chromEnd values not in the
+##'   set of coverage positions; label_dt is a data table with one row
+##'   per label, and additional columns firstRow/lastRow which refer
+##'   to row numbers of coverage_dt, 0-based for passing to C++ code.
 ##' @author Toby Dylan Hocking
 ##' @example inst/examples/FLOPART_data.R
 FLOPART_data <- function(coverage, label){
