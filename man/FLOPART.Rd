@@ -14,8 +14,15 @@ FLOPART(coverage, label, penalty)
 \item{penalty}{non-negative penalty constant}
 }
 \value{
-augmented list of output from FLOPART_interface and
-  FLOPART_data
+list with named elements: coverage_dt is a data table with
+  columns chromStart, chromEnd, count, weight; label_dt is a data
+  table with columns chromStart, chromEnd, annotation, type,
+  firstRow, lastRow; cost_mat is a Nx2 numeric matrix of optimal
+  penalized Poisson loss values up to each data point and in each
+  state; intervals_mat is a Nx2 integer matrix of counts of
+  intervals used to store the optimal cost function, useful for
+  analyzing time/space complexity; segments_dt is a data table
+  with columns chromStart, chromEnd, status, mean.
 }
 \description{
 Main function for computing optimal segmentation model with

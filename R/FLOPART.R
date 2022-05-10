@@ -95,8 +95,15 @@ FLOPART_data <- function(coverage, label){
 ##' @param coverage data frame of coverage
 ##' @param label data frame of labels
 ##' @param penalty non-negative penalty constant
-##' @return augmented list of output from FLOPART_interface and
-##'   FLOPART_data
+##' @return list with named elements: coverage_dt is a data table with
+##'   columns chromStart, chromEnd, count, weight; label_dt is a data
+##'   table with columns chromStart, chromEnd, annotation, type,
+##'   firstRow, lastRow; cost_mat is a Nx2 numeric matrix of optimal
+##'   penalized Poisson loss values up to each data point and in each
+##'   state; intervals_mat is a Nx2 integer matrix of counts of
+##'   intervals used to store the optimal cost function, useful for
+##'   analyzing time/space complexity; segments_dt is a data table
+##'   with columns chromStart, chromEnd, status, mean.
 ##' @author Toby Dylan Hocking
 ##' @example inst/examples/FLOPART.R
 FLOPART <- function(coverage, label, penalty){
@@ -120,6 +127,7 @@ FLOPART <- function(coverage, label, penalty){
   }
   segs[, status := ifelse(state==0, "background", "peak")]
   result[["segments_df"]] <- NULL
-  result[["segments_dt"]] <- segs
+  result[["segments_dt"]] <- segs[, .(
+    chromStart, chromEnd, status, mean)]
   c(data.list, result)
 }

@@ -108,8 +108,13 @@ test_that("can start up", {
     chromEnd=seq(1, N),
     count)
   result.list <- FLOPART::FLOPART(cov.df, penalty=5)
-  segs <- result.list[["segments_dt"]]
-  expect_identical(segs[["status"]], c("peak", "background"))
+  computed.segs <- result.list[["segments_dt"]]
+  expected.segs <- data.table(
+    chromStart=c(0,10),
+    chromEnd=c(10,20),
+    status=c("peak", "background"),
+    mean=c(mean(count[1:10]),mean(count[11:20])))
+  expect_equal(computed.segs, expected.segs)
 })
 
 test_that("factor annotation ok", {
