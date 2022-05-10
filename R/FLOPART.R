@@ -107,7 +107,7 @@ FLOPART_data <- function(coverage, label){
 ##' @author Toby Dylan Hocking
 ##' @example inst/examples/FLOPART.R
 FLOPART <- function(coverage, label, penalty){
-  status <- state <- NULL
+  status <- state <- . <- chromStart <- chromEnd <- NULL
   data.list <- FLOPART_data(coverage, label)
   result <- with(data.list, FLOPART_interface(
     coverage_dt[["count"]],
