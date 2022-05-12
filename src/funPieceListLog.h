@@ -65,7 +65,7 @@ public:
   double findCost(double mean);
   void Minimize
     (MinimizeResult *res);
-  void adjustWeights
+  void addDataLoss
   (const double,const double,const double*,const int,const int*);
   void addPenalty(double penalty, double cum_weight_prev_i);
 };

@@ -1,3 +1,4 @@
+library(data.table)
 library(testthat)
 library(FLOPART)
 data_vec <- 1:5
@@ -142,7 +143,6 @@ test_that("error for non-df coverage", {
   }, "coverage must be a data frame")
 })
 
-library(data.table)
 chromEnd <- seq(10, 30, by=10)
 counts <- data.table(
   chromStart=chromEnd-10L,

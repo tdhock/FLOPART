@@ -5,6 +5,93 @@
 #include <R.h> // for Rprintf
 #include "FLOPART.h"
 
+class Rule {
+public:
+  void update
+  (PiecewisePoissonLossLog *this_cost,
+   PiecewisePoissonLossLog *this_cost_prev,
+   PiecewisePoissonLossLog *other_cost_prev,
+   PiecewisePoissonLossLog *initial_cost,
+   int curr_label_type,
+   bool at_beginning,
+   bool at_end,
+   double cum_weight_prev_i,
+   double cum_weight_i,
+   const double *weight_vec,
+   int data_i,
+   const int *data_vec,
+   int verbose,
+   double penalty
+   ){
+    PiecewisePoissonLossLog cost_of_change;
+    if(data_i == 0){
+      *this_cost = *initial_cost;
+    } else if(no_change(curr_label_type, at_beginning, at_end)){
+      *this_cost = *this_cost_prev;
+    } else if(infinite(curr_label_type, at_beginning, at_end)){
+      this_cost->set_infinite();
+    } else if(change(curr_label_type, at_beginning, at_end)){
+      min_more_or_less(&cost_of_change, other_cost_prev, verbose);
+      cost_of_change.set_prev_seg_end(data_i-1);
+      cost_of_change.addPenalty(penalty, cum_weight_prev_i);
+      this_cost->set_to_min_env_of(this_cost_prev, &cost_of_change, verbose);
+    }
+    this_cost->addDataLoss
+      (cum_weight_prev_i, cum_weight_i, weight_vec,
+       data_i, data_vec);
+  }
+  virtual void min_more_or_less
+  (PiecewisePoissonLossLog*, PiecewisePoissonLossLog*, int) = 0;
+  virtual bool no_change(int,bool,bool) = 0;
+  virtual bool infinite(int,bool,bool) = 0;
+  virtual bool change(int,bool,bool) = 0;
+};
+
+class Up : public Rule {
+  void min_more_or_less
+  (PiecewisePoissonLossLog *cost_of_change_up,
+   PiecewisePoissonLossLog *down_cost_prev,
+   int verbose){
+    cost_of_change_up->set_to_min_less_of(down_cost_prev, verbose);
+  }
+  bool no_change(int curr_label_type, bool at_beginning, bool at_end){
+    return curr_label_type == LABEL_PEAKEND && !at_beginning && !at_end;
+  }
+  bool infinite(int curr_label_type, bool at_beginning, bool at_end){
+    return curr_label_type == LABEL_NOPEAKS
+      || (curr_label_type == LABEL_PEAKSTART && at_beginning)
+      || (curr_label_type == LABEL_PEAKEND && at_end);
+  }
+  bool change(int curr_label_type, bool at_beginning, bool at_end){
+    return curr_label_type == LABEL_UNLABELED 
+      || (curr_label_type== LABEL_PEAKSTART && !at_beginning) 
+      || (curr_label_type == LABEL_PEAKEND && at_beginning);
+  }
+};
+    
+class Down : public Rule {
+  void min_more_or_less
+  (PiecewisePoissonLossLog *cost_of_change_down,
+   PiecewisePoissonLossLog *up_cost_prev,
+   int verbose){
+    cost_of_change_down->set_to_min_more_of(up_cost_prev, verbose);
+  }
+  bool no_change(int curr_label_type, bool at_beginning, bool at_end){
+    return (curr_label_type == LABEL_NOPEAKS && !at_beginning)
+      || (curr_label_type == LABEL_PEAKSTART && !at_beginning && !at_end);
+  }
+  bool infinite(int curr_label_type, bool at_beginning, bool at_end){
+    return (curr_label_type == LABEL_PEAKEND && at_beginning) ||
+      (curr_label_type == LABEL_PEAKSTART && at_end);
+  }
+  bool change(int curr_label_type, bool at_beginning, bool at_end){
+    return curr_label_type == LABEL_UNLABELED 
+      || (curr_label_type == LABEL_PEAKSTART && at_beginning)
+      || (curr_label_type == LABEL_NOPEAKS && at_beginning)
+      || (curr_label_type == LABEL_PEAKEND && !at_beginning);
+  }
+};
+
 int FLOPART
   (const int *data_vec, const double *weight_vec, const int data_count,
    const double penalty,
@@ -65,11 +152,12 @@ int FLOPART
     return ERROR_MIN_MAX_SAME;
   }
   CostMatrix cost_funs(data_count);
-  PiecewisePoissonLossLog *up_cost, *down_cost, *up_cost_prev, *down_cost_prev;
+  PiecewisePoissonLossLog
+    *up_cost, *down_cost, *up_cost_prev, *down_cost_prev;
   // initialize to avoid warnings.
   up_cost_prev = &cost_funs.cost_vec[0];
   down_cost_prev = &cost_funs.cost_vec[0];
-  PiecewisePoissonLossLog cost_of_change_up, cost_of_change_down, initial_cost;
+  PiecewisePoissonLossLog initial_cost;
   // initialization C_1(m)=loss_1(m)/w_1
   initial_cost.piece_list.emplace_back
     (1.0, -data_vec[0], 0.0,
@@ -84,7 +172,8 @@ int FLOPART
     at_end = false;
     //if we haven't checked all the labels 
     if(curr_label_index < label_count){
-      if(data_i >= label_starts[curr_label_index] && data_i <= label_ends[curr_label_index]){
+      if(data_i >= label_starts[curr_label_index] &&
+	 data_i <= label_ends[curr_label_index]){
         //if >= current start and <= current end
         curr_label_type = label_types[curr_label_index];
         if(data_i == label_starts[curr_label_index]){
@@ -100,51 +189,23 @@ int FLOPART
     }else{
       curr_label_type = LABEL_UNLABELED;
     }
-    //---UP COST CALCULATIONS---
-    if(data_i == 0){
-      *up_cost = initial_cost;
-    } else if(curr_label_type == LABEL_PEAKEND && !at_beginning && !at_end){
-      *up_cost = *up_cost_prev;
-    } else if(curr_label_type == LABEL_NOPEAKS
-	      || (curr_label_type == LABEL_PEAKSTART && at_beginning)
-              || (curr_label_type == LABEL_PEAKEND && at_end)){
-      //if in no peaks or beginning of peak start or end of peak end
-      up_cost->set_infinite();
-    } else if(curr_label_type == LABEL_UNLABELED 
-              || (curr_label_type== LABEL_PEAKSTART && !at_beginning) 
-              || (curr_label_type == LABEL_PEAKEND && at_beginning)){
-      //if unlabeled or not beginning of peak start or beginning of peak end  
-      //up cost is min of prev_up, min_less(prev+down + penalty)
-      cost_of_change_up.set_to_min_less_of(down_cost_prev, verbose);
-      cost_of_change_up.set_prev_seg_end(data_i-1);
-      cost_of_change_up.addPenalty(penalty, cum_weight_prev_i);
-      up_cost->set_to_min_env_of(up_cost_prev, &cost_of_change_up, verbose);
+    for(int state=0; state<=1; state++){
+      if(state==0){
+	Down down;
+	down.update
+	  (down_cost, down_cost_prev, up_cost_prev,
+	   &initial_cost, curr_label_type, at_beginning, at_end,
+	   cum_weight_prev_i, cum_weight_i, weight_vec,
+	   data_i, data_vec, verbose, penalty);
+      }else{
+	Up up;
+	up.update
+	  (up_cost, up_cost_prev, down_cost_prev,
+	   &initial_cost, curr_label_type, at_beginning, at_end,
+	   cum_weight_prev_i, cum_weight_i, weight_vec,
+	   data_i, data_vec, verbose, penalty);
+      }
     }
-    //---DOWN COST CALCULATIONS--- 
-    if(data_i==0){
-      *down_cost = initial_cost;
-    } else if((curr_label_type == LABEL_PEAKEND && at_beginning) ||
-            (curr_label_type == LABEL_PEAKSTART && at_end)){
-      //if at beginning of peak end or end of peak start, infinite down
-      down_cost->set_infinite();
-    } else if((curr_label_type == LABEL_NOPEAKS && !at_beginning)
-	      || (curr_label_type == LABEL_PEAKSTART && !at_beginning && !at_end)){
-      //if not at beginning of noPeaks or middle of peak start
-      *down_cost = *down_cost_prev;
-    } else if(curr_label_type == LABEL_UNLABELED 
-              || (curr_label_type == LABEL_PEAKSTART && at_beginning)
-              || (curr_label_type == LABEL_NOPEAKS && at_beginning)
-              || (curr_label_type == LABEL_PEAKEND && !at_beginning)){
-      //if unlabeled or first or no peaks/peakStart or not at beginning of peak end
-      cost_of_change_down.set_to_min_more_of(up_cost_prev, verbose);
-      cost_of_change_down.set_prev_seg_end(data_i-1);
-      cost_of_change_down.addPenalty(penalty, cum_weight_prev_i);
-      down_cost->set_to_min_env_of(down_cost_prev, &cost_of_change_down, verbose);
-    } 
-    up_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
-                           data_i, data_vec);
-    down_cost->adjustWeights(cum_weight_prev_i, cum_weight_i, weight_vec,
-                             data_i, data_vec);
     cum_weight_prev_i = cum_weight_i;
     up_cost_prev = up_cost;
     down_cost_prev = down_cost;

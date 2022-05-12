@@ -1320,7 +1320,7 @@ void PiecewisePoissonLossLog::push_piece
   }
 }
 
-void PiecewisePoissonLossLog::adjustWeights
+void PiecewisePoissonLossLog::addDataLoss
 (const double cum_weight_prev_i,
  const double cum_weight_i,
  const double *weight_vec,
