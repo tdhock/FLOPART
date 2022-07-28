@@ -43,7 +43,7 @@ The constraints for the different label types are as follows:
   down/background state, there must be exactly one non-decreasing
   change in this label, and the model must be in the up/peak state at
   the end of the label.
-* peakEnd: at the end of the label the model must be in the up/peak
+* peakEnd: at the start of the label the model must be in the up/peak
   state, there must be exactly one non-increasing change in this
   label, and the model must be in the down/background state at the end
   of the label.
