@@ -154,7 +154,7 @@ Other outputs which could be of interest:
   intervals.
 * `coverage_dt` is a modified version of the initial coverage data
   set. For example there will be additional rows if there are labels
-  that start/end values that are not present in the initial coverage.
+  with start/end values that are not present in the initial coverage.
 * `label_dt` has additional columns firstRow/lastRow which correspond
   to the start/end positions of the labels, in units of the rows in
   `coverage_dt`.
