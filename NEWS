@@ -1,6 +1,7 @@
 Changes in version 2023.8.31
 
 - reformat NEWS.
+- move long running example to vignette to save time in CRAN check.
 
 Changes in version 2022.2.23
 

@@ -10,6 +10,7 @@ ann.colors <- c(
   noPeaks="orange",
   peakStart="#efafaf",
   peakEnd="#ff4c4c")
+model.color <- "blue"
 (peaks.dt <- fit[["segments_dt"]][status=="peak"][, peak.y := -2][])
 if(require("ggplot2")){
   ggplot()+
