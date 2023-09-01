@@ -8,8 +8,13 @@ Description: Provides an efficient C++ code for computing an
  optimal segmentation model with Poisson loss,
  up-down constraints, and label constraints.
 License: GPL-3
-RoxygenNote: 7.1.2
-Suggests: testthat, PeakError, ggplot2
+RoxygenNote: 7.2.3
+Suggests:
+ testthat,
+ PeakError,
+ knitr, markdown,
+ ggplot2
 Depends: R (>= 2.10)
 LinkingTo: Rcpp
 Imports: Rcpp, data.table
+VignetteBuilder: knitr
